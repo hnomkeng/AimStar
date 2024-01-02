@@ -22,37 +22,33 @@ namespace Offset
 		DWORD IsAlive = 0x7F4;
 		DWORD PlayerPawn = 0x7EC;
 		DWORD iszPlayerName = 0x640;
-		DWORD EnemySensor = 0x13DC;
+		DWORD EnemySensor = 0x13E4;
 		DWORD GravityScale = 0x434;
 	}Entity;
+
 	struct
 	{
-		DWORD BulletServices = 0x16B0;
+		DWORD BulletServices = 0x16B8;
 		DWORD TotalHit = 0x40;
 		DWORD Pos = 0x1224;	// m_vOldOrigin
 		DWORD MaxHealth = 0x328;
 		DWORD CurrentHealth = 0x32C; // m_iHealth
 		DWORD GameSceneNode = 0x310;
 		DWORD BoneArray = 0x1E0;
-		DWORD angEyeAngles = 0x1510;
-		DWORD vecLastClipCameraPos = 0x128C;
-		DWORD pClippingWeapon = 0x12A8;
-		DWORD iShotsFired = 0x1418;
-		DWORD flFlashDuration = 0x1468;
-		DWORD aimPunchAngle = 0x1714;
-		DWORD aimPunchCache = 0x1738;
-		DWORD iIDEntIndex = 0x153C;
+		DWORD angEyeAngles = 0x1518;
+		DWORD vecLastClipCameraPos = 0x1294;
+		DWORD pClippingWeapon = 0x12B0;
+		DWORD iShotsFired = 0x1420;
+		DWORD flFlashDuration = 0x1470;
+		DWORD aimPunchAngle = 0x171C;
+		DWORD aimPunchCache = 0x1740;
+		DWORD iIDEntIndex = 0x1544;
 		DWORD iTeamNum = 0x3BF;
 		DWORD CameraServices = 0x10E0; // m_pCameraServices
 		DWORD iFovStart = 0x214;
-		DWORD fFlags = 0x63;
-		DWORD bSpottedByMask = 0x1A28 + 0xC; // entitySpottedState + bSpottedByMask
+		DWORD fFlags = 0x3C8;
+		DWORD bSpottedByMask = 0x1638 + 0xC; // entitySpottedState + bSpottedByMask
 	} Pawn;
-
-	struct
-	{
-		DWORD CurrentHealth = 0x32C; // m_iHealth
-	} ServerPawn;
 
 	struct
 	{
@@ -88,6 +84,18 @@ namespace Offset
 		DWORD m_flDefuseCountDown = 0xED0;
 		DWORD m_nBombSite = 0xE84;
 	} C4;
+
+	struct // C_BaseCSGrenadeProjectile
+	{ 
+		DWORD nSmokeEffectTickBegin = 0x1108; // int32_t
+		DWORD bDidSmokeEffect = 0x110C; // bool
+		DWORD nRandomSeed = 0x1110; // int32_t
+		DWORD vSmokeColor = 0x1114; // Vector
+		DWORD vSmokeDetonationPos = 0x1120; // Vector
+		DWORD VoxelFrameData = 0x1130; // CUtlVector<uint8_t>
+		DWORD bSmokeVolumeDataReceived = 0x1148; // bool
+		uintptr_t bSmokeEffectSpawned = 0x1149; // bool
+	} SmokeGrenadeProjectile; 
 
 	namespace Signatures
 	{

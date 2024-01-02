@@ -1,99 +1,147 @@
 #include "Misc.h"
 #include "..\Resources\Language.h"
 #include <iostream>
+#include <Shellapi.h>
 
-void Misc::CheatList() noexcept
+namespace Misc
 {
-	if (!MenuConfig::Misc.CheatList)
-		return;
+	void JoinDiscord() noexcept
+	{
+		if (!MiscCFG::mother)
+			return;
 
-	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse;
-	ImGui::SetNextWindowBgAlpha(0.3f);
-	ImGui::SetNextWindowSize(ImVec2(200, 0));
-	ImGui::Begin("Cheats List", nullptr, windowFlags);
+		ShellExecuteA(NULL, "open", "https://discord.com/invite/VgRrxwesPz", NULL, NULL, SW_SHOWNORMAL);
+		MiscCFG::mother = !MiscCFG::mother;
+	}
 
-	CheatText("ESP", ESPConfig::ESPenbled);
-	if (MenuConfig::AimBot && (MenuConfig::AimAlways || GetAsyncKeyState(AimControl::HotKey)))
-		ImGui::Text("Aimbot [Toggle]");
-	CheatText("RCS", MenuConfig::RCS);
-	CheatText("Glow", MenuConfig::Misc.Glow);
-	CheatText("Radar", MenuConfig::Radar.ShowRadar);
-	if (MenuConfig::TriggerBot && (MenuConfig::TriggerAlways || GetAsyncKeyState(MenuConfig::TriggerHotKey)))
-		ImGui::Text("TriggerBot [Toggle]");
+	void SourceCode() noexcept
+	{
+		if (!MiscCFG::fucker)
+			return;
 
-	CheatText("Crosshair", MenuConfig::Crosshairs.ShowCrossHair);
-	CheatText("Headshot Line", MenuConfig::ShowHeadShootLine);
-	CheatText("No Flash", MenuConfig::Misc.NoFlash);
-	CheatText("Bhop", MenuConfig::Misc.BunnyHop);
-	CheatText("HitSound", MenuConfig::Misc.HitSound);
-	CheatText("Bomb Timer", MenuConfig::Misc.bmbTimer);
-	CheatText("Spec List", MenuConfig::Misc.SpecList);
+		ShellExecuteA(NULL, "open", "https://github.com/CowNowK/AimStar", NULL, NULL, SW_SHOWNORMAL);
+		MiscCFG::fucker = !MiscCFG::fucker;
+	}
 
-	ImGui::End();
-}
+	void CheatList() noexcept
+	{
+		if (!MiscCFG::CheatList)
+			return;
 
-void Misc::Watermark() noexcept
-{
-	if (!MenuConfig::Misc.WaterMark)
-		return;
+		ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse;
+		ImGui::SetNextWindowBgAlpha(0.3f);
+		ImGui::SetNextWindowSize(ImVec2(200, 0));
+		ImGui::Begin("Cheats List", nullptr, windowFlags);
 
-//	globalvars GV;
-	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize;
-	ImGui::SetNextWindowBgAlpha(0.3f);
-	ImGui::Begin("Watermark", nullptr, windowFlags);
+		CheatText("ESP", ESPConfig::ESPenbled);
+		if (MenuConfig::AimBot && (MenuConfig::AimAlways || GetAsyncKeyState(AimControl::HotKey)))
+			ImGui::Text("Aimbot [Toggle]");
+		CheatText("RCS", MenuConfig::RCS);
+		CheatText("Glow", MenuConfig::Glow);
+		CheatText("Radar", RadarCFG::ShowRadar);
+		if (MenuConfig::TriggerBot && (MenuConfig::TriggerAlways || GetAsyncKeyState(MenuConfig::TriggerHotKey)))
+			ImGui::Text("TriggerBot [Toggle]");
 
-	static auto FrameRate = 1.0f;
-	struct tm ptm;
-//	FrameRate = 0.9f * FrameRate + 0.1f * GV.GetFrameCount();
-	FrameRate = ImGui::GetIO().Framerate;
-	getCurrentTime(&ptm);
+		CheatText("Crosshair", CrosshairsCFG::ShowCrossHair);
+		CheatText("Headshot Line", MenuConfig::ShowHeadShootLine);
+		CheatText("No Flash", MiscCFG::NoFlash);
+		CheatText("Bhop", MiscCFG::BunnyHop);
+		CheatText("HitSound", MiscCFG::HitSound);
+		CheatText("Bomb Timer", MiscCFG::bmbTimer);
+		CheatText("Spec List", MiscCFG::SpecList);
 
-	ImGui::Text("AimStar | %d fps | %02d:%02d:%02d",
-		FrameRate != 0.0f ? static_cast<int>(FrameRate) : 0,
-		ptm.tm_hour, ptm.tm_min, ptm.tm_sec);
-	ImGui::End();
-}
+		ImGui::End();
+	}
 
-void Misc::HitSound(const CEntity& aLocalPlayer, int& PreviousTotalHits) noexcept
-{
-	if (!MenuConfig::Misc.HitSound)
-		return;
+	void Watermark() noexcept
+	{
+		if (!MiscCFG::WaterMark)
+			return;
 
-	std::string soundDir = MenuConfig::SoundPath + "\\Hit.wav";
-	std::wstring sound = Misc::STR2LPCWSTR(soundDir);
+		//	globalvars GV;
+		ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize;
+		ImGui::SetNextWindowBgAlpha(0.3f);
+		ImGui::Begin("Watermark", nullptr, windowFlags);
 
-	uintptr_t pBulletServices;
-	int totalHits;
-	ProcessMgr.ReadMemory(aLocalPlayer.Pawn.Address + Offset::Pawn.BulletServices, pBulletServices);
-	ProcessMgr.ReadMemory(pBulletServices + Offset::Pawn.TotalHit, totalHits);
+		static auto FrameRate = 1.0f;
+		struct tm ptm;
+		//	FrameRate = 0.9f * FrameRate + 0.1f * GV.GetFrameCount();
+		FrameRate = ImGui::GetIO().Framerate;
+		getCurrentTime(&ptm);
 
-	if (totalHits != PreviousTotalHits) {
-		if (totalHits == 0 && PreviousTotalHits != 0)
-		{
-			// `totalHits` changed from non-zero to zero, do not play hitsound
+		ImGui::Text("AimStar | %d fps | %02d:%02d:%02d",
+			FrameRate != 0.0f ? static_cast<int>(FrameRate) : 0,
+			ptm.tm_hour, ptm.tm_min, ptm.tm_sec);
+		ImGui::End();
+	}
+
+	void HitSound(const CEntity& aLocalPlayer, int& PreviousTotalHits) noexcept
+	{
+		if (!MiscCFG::HitSound)
+			return;
+
+		std::string soundDir = MenuConfig::SoundPath + "\\Hit.wav";
+		std::wstring sound = Misc::STR2LPCWSTR(soundDir);
+
+		uintptr_t pBulletServices;
+		int totalHits;
+		ProcessMgr.ReadMemory(aLocalPlayer.Pawn.Address + Offset::Pawn.BulletServices, pBulletServices);
+		ProcessMgr.ReadMemory(pBulletServices + Offset::Pawn.TotalHit, totalHits);
+
+		if (totalHits != PreviousTotalHits) {
+			if (totalHits == 0 && PreviousTotalHits != 0)
+			{
+				// `totalHits` changed from non-zero to zero, do not play hitsound
+			}
+			else
+			{
+				// Play the HitSound
+				PlaySoundW(sound.c_str(), NULL, SND_FILENAME | SND_ASYNC);
+			}
 		}
-		else
+		PreviousTotalHits = totalHits;
+	}
+
+	void NoFlash(const CEntity& aLocalPlayer) noexcept
+	{
+		if (!MiscCFG::NoFlash)
+			return;
+
+		float duration = 0.0f;
+		ProcessMgr.WriteMemory(aLocalPlayer.Pawn.Address + Offset::Pawn.flFlashDuration, duration);
+	}
+
+	void EdgeJump(const CEntity& aLocalPlayer) noexcept
+	{
+		// Unfinished
+		float Gravity;
+		ProcessMgr.ReadMemory(aLocalPlayer.Pawn.Address + Offset::Entity.GravityScale, Gravity);
+		std::cout << Gravity << std::endl;
+	}
+
+	void NoSmoke(const DWORD64 EntityAddress) noexcept
+	{
+		uintptr_t entbase;
+		bool SmokeStatus = false;
+		int SmokeTime;
+		ProcessMgr.ReadMemory(EntityAddress, entbase);
+		ProcessMgr.WriteMemory<bool>(entbase + Offset::SmokeGrenadeProjectile.bDidSmokeEffect, SmokeStatus);
+	}
+
+	void SmokeColor(const DWORD64 EntityAddress) noexcept
+	{
+		uintptr_t entbase, adrr;
+		char toread[32];
+		std::string classname;
+		ProcessMgr.ReadMemory<uintptr_t>((uintptr_t)EntityAddress, entbase);
+		ProcessMgr.ReadMemory<uintptr_t>(entbase + 0x10, adrr);
+		ProcessMgr.ReadMemory<uintptr_t>(adrr + 0x20, adrr);
+		ProcessMgr.ReadMemory<char[32]>(adrr, toread);
+		classname = toread;
+		if (classname == "smokegrenade_projectile")
 		{
-			// Play the HitSound
-			PlaySoundW(sound.c_str(), NULL, SND_FILENAME | SND_ASYNC);
+			Vector3 RED_COLOR = { 1.f, 0.f, 0.f };
+			ProcessMgr.WriteMemory<Vector3>(entbase + Offset::SmokeGrenadeProjectile.vSmokeColor, RED_COLOR);
 		}
 	}
-	PreviousTotalHits = totalHits;
-}
-
-void Misc::NoFlash(const CEntity& aLocalPlayer) noexcept
-{
-	if (!MenuConfig::Misc.NoFlash)
-		return;
-
-	float duration = 0.0f;
-	ProcessMgr.WriteMemory(aLocalPlayer.Pawn.Address + Offset::Pawn.flFlashDuration, duration);
-}
-
-void Misc::EdgeJump(const CEntity& aLocalPlayer) noexcept
-{
-	// Unfinished
-	float Gravity;
-	ProcessMgr.ReadMemory(aLocalPlayer.Pawn.Address + Offset::Entity.GravityScale, Gravity);
-	std::cout << Gravity << std::endl;
 }

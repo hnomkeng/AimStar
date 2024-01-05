@@ -21,9 +21,11 @@ Most of the code is contributed by users, and the code structure might be very m
 
 中文文档：[Readme CN](https://github.com/CowNowK/AimStar/blob/main/%E8%87%AA%E8%BF%B0%E6%96%87%E6%A1%A3.md)
 
+Русский язык: [Readme RU](https://github.com/CowNowK/AimStar/blob/main/ПРОЧИТАЙМЕНЯ.md)
+
 ## ⚠️ Notice
 
-**Isnt working?** -> [**__COMMON ISSUES__**](https://github.com/CowNowK/AimStarCS2/discussions/19)
+**Isnt working?** -> [**__COMMON ISSUES__**](https://github.com/CowNowK/AimStar/wiki)
 
 ***
 > I am so busy that I may not update the code on time. If u have the capability to update or fix bugs, u can pull ur request🤩

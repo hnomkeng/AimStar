@@ -311,6 +311,7 @@ namespace GUI
 					PutSwitch("Headshot Line", 10.f, ImGui::GetFrameHeight() * 1.7, &MenuConfig::ShowHeadShootLine);
 					PutSwitch("Cheat in Spec", 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::WorkInSpec);
 					PutSwitch("No Flash", 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::NoFlash);
+					PutSwitch("Fast Stop", 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::FastStop);
 					PutSwitch("Hit Sound", 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::HitSound);
 					PutSwitch("Bomb Timer", 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::bmbTimer, true, "###bmbTimerCol", reinterpret_cast<float*>(&MiscCFG::BombTimerCol));
 					PutSwitch("Bunny Hop", 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::BunnyHop);
@@ -482,6 +483,7 @@ namespace GUI
 					}
 				}
 				ImGui::TextColored(ImColor(101, 255, 0, 255), Lang::AimbotText.Tip);
+				ImGui::Checkbox("Recoil Control", &MenuConfig::RCS);
 				/*
 				ImGui::NewLine();
 				ImGui::SeparatorText("Recoil Control System");
@@ -624,7 +626,7 @@ namespace GUI
 				if (ImGui::Combo(Lang::MiscText.LanguageList, &MenuConfig::Language,
 					"English\0Danish\0German\0Polish\0Portuguese\0Russian\0Simplified Chinese\0Slovak\0French\0Turkish\0Hungarian\0Dutch\0")) // Korean\0
 					Lang::ChangeLang(MenuConfig::Language);
-				if (ImGui::Combo(Lang::MiscText.ThemeList, &MenuConfig::MenuStyle, "AimStar\0Enemy\0Hacker\0Red\0Modern Dark\0Deep Dark\0Round Gray\0"))
+				if (ImGui::Combo(Lang::MiscText.ThemeList, &MenuConfig::MenuStyle, "AimStar\0Enemy\0Hacker\0Red\0Modern Dark\0Deep Dark\0Round Gray\0Square Dark\0Egirl\0Trans\0"))
 					StyleChanger::UpdateSkin(MenuConfig::MenuStyle);
 				if (ImGui::Combo(Lang::MiscText.StyleList, &MenuConfig::WindowStyle, "Osiris\0AimStar\0"))
 					if (MenuConfig::WindowStyle)
@@ -635,6 +637,7 @@ namespace GUI
 				ImGui::ColorEdit4("##HeadShootLineColor", reinterpret_cast<float*>(&MenuConfig::HeadShootLineColor), ImGuiColorEditFlags_NoInputs);
 				ImGui::Checkbox(Lang::MiscText.SpecCheck, &MiscCFG::WorkInSpec);
 				ImGui::Checkbox(Lang::MiscText.NoFlash, &MiscCFG::NoFlash);
+				ImGui::Checkbox(Lang::MiscText.FastStop, &MiscCFG::FastStop);
 				ImGui::Checkbox(Lang::MiscText.HitSound, &MiscCFG::HitSound);
 				ImGui::Checkbox(Lang::MiscText.bmbTimer, &MiscCFG::bmbTimer);
 				ImGui::SameLine();
@@ -665,18 +668,9 @@ namespace GUI
 			sprintf_s(TempText, "%s%s", ICON_FA_FILE_CODE, Lang::ReadMeText.FeatureName);
 			if (ImGui::BeginTabItem(TempText))
 			{
-				/*
-				if (ImGui::IsItemHovered())
-				{
-					ImGui::SetTooltip("About.");
-				}*/
-
-				// Since it's already the MIT license, there's no need to do that.
-				// ImGui::TextColored(ImColor(255, 0, 0, 255), "Reselling prohibited");
-
 				ImGui::TextColored(ImColor(0, 200, 255, 255), Lang::ReadMeText.LastUpdate);
 				ImGui::SameLine();
-				ImGui::TextColored(ImColor(0, 200, 255, 255), "2024-01-02");
+				ImGui::TextColored(ImColor(0, 200, 255, 255), "2024-01-08");
 				sprintf_s(TempText, "%s%s", ICON_FA_COPY, Lang::ReadMeText.SourceButton);
 				Gui.OpenWebpageButton(TempText, "https://github.com/CowNowK/AimStar");
 				ImGui::SameLine();
@@ -684,7 +678,7 @@ namespace GUI
 				Gui.OpenWebpageButton(TempText, "https://discord.com/invite/VgRrxwesPz");
 				ImGui::NewLine();
 
-				ImGui::Text(Lang::ReadMeText.OffsetsTitle);
+				ImGui::SeparatorText(Lang::ReadMeText.OffsetsTitle);
 				ImGui::Text("EntityList:");
 				ImGui::SameLine();
 				ImGui::Text(std::to_string(Offset::EntityList).c_str());

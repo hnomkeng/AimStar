@@ -13,6 +13,7 @@ namespace ConfigMenu {
 	void RenderCFGmenu()
 	{
 		static char configNameBuffer[128] = "NewConfig";
+		static char configAuthorBuffer[128] = "Author";
 		static int selectedConfig = -1;
 
 		const std::string configDir = MenuConfig::path;
@@ -22,7 +23,7 @@ namespace ConfigMenu {
 		configFiles.clear();
 		for (const auto& entry : std::filesystem::directory_iterator(configDir))
 		{
-			if (entry.is_regular_file() && entry.path().extension() == ".config")
+			if (entry.is_regular_file() && entry.path().extension() == ".yml")
 			{
 				configFiles.push_back(entry.path().filename().string());
 			}
@@ -98,16 +99,19 @@ namespace ConfigMenu {
 		}
 		ImGui::NextColumn();
 		ImGui::SetCursorPosY(24.f);
-		ImGui::SeparatorText("Config");
-		ImGui::TextDisabled("Create config");
+		ImGui::SeparatorText("Create Config");
+		ImGui::TextDisabled("Author name");
 		ImGui::SetNextItemWidth(ComponentWidth + 10);
-		ImGui::InputText(" ", configNameBuffer, sizeof(configNameBuffer));
+		ImGui::InputText("###ConfigNameInput", configAuthorBuffer, sizeof(configAuthorBuffer));
+		ImGui::TextDisabled("Config name");
+		ImGui::SetNextItemWidth(ComponentWidth + 10);
+		ImGui::InputText("###AuthorNameInput", configNameBuffer, sizeof(configNameBuffer));
 		ImGui::NewLine();
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetColumnWidth() / 4);
 		if (ImGui::Button("Create Config", { 126.f, 30.f }))
 		{
-			std::string configFileName = std::string(configNameBuffer) + ".config";
-			MyConfigSaver::SaveConfig(configFileName);
+			std::string configFileName = std::string(configNameBuffer) + ".yml";
+			MyConfigSaver::SaveConfig(configFileName, std::string(configAuthorBuffer));
 		}
 		ImGui::NewLine();
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetColumnWidth() / 4);
@@ -137,7 +141,7 @@ namespace ConfigMenu {
 			configFiles.clear();
 			for (const auto& entry : std::filesystem::directory_iterator(configDir))
 			{
-				if (entry.is_regular_file() && entry.path().extension() == ".config")
+				if (entry.is_regular_file() && entry.path().extension() == ".yml")
 				{
 					configFiles.push_back(entry.path().filename().string());
 				}
@@ -219,7 +223,7 @@ namespace ConfigMenu {
 			ImGui::SameLine();
 			if (ImGui::Button("Create Config", { 100.0f, 25.0f }))
 			{
-				std::string configFileName = std::string(configNameBuffer) + ".config";
+				std::string configFileName = std::string(configNameBuffer) + ".yml";
 				MyConfigSaver::SaveConfig(configFileName);
 			}
 			ImGui::SameLine();
@@ -234,6 +238,7 @@ namespace ConfigMenu {
 	}
 
 	void ResetToDefault() {
+		ESPConfig::AmmoBar = false;
 		ESPConfig::OutLine = true;
 		ESPConfig::ShowHealthNum = false;
 		ESPConfig::FilledColor = ImColor(255, 255, 255, 255);
@@ -328,7 +333,7 @@ namespace ConfigMenu {
 		MiscCFG::HitSound = false;
 		MiscCFG::FastStop = false;
 
-		ESPConfig::ESPenbled = false;
+		ESPConfig::ESPenabled = false;
 
 		ESPConfig::ShowPenis = false;
 		ESPConfig::PenisLength = 15.f;

@@ -91,7 +91,7 @@ namespace ESP
 		uintptr_t ClippingWeapon, WeaponData, WeaponNameAddress;
 		ProcessMgr.ReadMemory(Entity.Pawn.Address + Offset::Pawn.pClippingWeapon, ClippingWeapon);
 		ProcessMgr.ReadMemory(ClippingWeapon + 0x360, WeaponData);
-		ProcessMgr.ReadMemory(WeaponData + Offset::WeaponBaseData.m_szName, WeaponNameAddress);
+		ProcessMgr.ReadMemory(WeaponData + Offset::WeaponBaseData.szName, WeaponNameAddress);
 		std::string weaponName = "Invalid Weapon Name";
 
 		if (!WeaponNameAddress)
@@ -205,9 +205,10 @@ namespace ESP
 			if (MenuConfig::HealthBarType == 0 || MenuConfig::HealthBarType == 1)
 			{
 				WeaponIconSize iconSize = weaponIconSizes[Entity.Pawn.WeaponName];
-				ImVec2 textPosition = { Rect.x + (Rect.z - iconSize.width) / 2 + iconSize.offsetX, Rect.y + Rect.w + 1 + iconSize.offsetY };
-
-				//Gui.StrokeText(Entity.Pawn.WeaponName, { Rect.x + Rect.z / 2,Rect.y + Rect.w }, ImColor(255, 255, 255, 255), 14, true);
+				ImVec2 textPosition = { Rect.x + (Rect.z - iconSize.width) / 2 + iconSize.offsetX, Rect.y + Rect.w + 1 + iconSize.offsetY};
+				if (ESPConfig::AmmoBar)
+					textPosition.y += 5;
+				// Gui.StrokeText(Entity.Pawn.WeaponName, { Rect.x + Rect.z / 2,Rect.y + Rect.w + 10}, ImColor(255, 255, 255, 255), 14, true);
 				ImGui::GetBackgroundDrawList()->AddText(ImGui::GetIO().Fonts->Fonts[1], 15.0f, ImVec2{ textPosition.x - 1, textPosition.y - 1 }, ImColor(0, 0, 0, 255), weaponIcon.c_str());
 				ImGui::GetBackgroundDrawList()->AddText(ImGui::GetIO().Fonts->Fonts[1], 15.0f, ImVec2{ textPosition.x - 1, textPosition.y + 1 }, ImColor(0, 0, 0, 255), weaponIcon.c_str());
 				ImGui::GetBackgroundDrawList()->AddText(ImGui::GetIO().Fonts->Fonts[1], 15.0f, ImVec2{ textPosition.x + 1, textPosition.y + 1 }, ImColor(0, 0, 0, 255), weaponIcon.c_str());
@@ -411,19 +412,16 @@ namespace ESP
 			if (MenuConfig::HealthBarType == 0) {
 				ImVec2 HBS(HBPos.x - 6, HBPos.y);
 				ImVec2 HBE(HBPos.x - 3, HBPos.y + HBSize.y);
-				ImGui::GetWindowDrawList()->AddRectFilled(HBS, HBE, ImColor(96, 246, 113, 220), 30.f, ImDrawCornerFlags_All);
-			}
-			if (MenuConfig::HealthBarType == 1) {
-				ImVec2 HBS(HBPos.x, HBPos.y - 6);
-				ImVec2 HBE(HBPos.x + HBSize.x, HBPos.y - 3);
-				ImGui::GetWindowDrawList()->AddRectFilled(HBS, HBE, ImColor(96, 246, 113, 220), 30.f, ImDrawCornerFlags_All);
-			}
-			if (MenuConfig::HealthBarType == 2) {
-				ImVec2 HBS(HBPos.x, HBPos.y + HBSize.y + 6);
-				ImVec2 HBE(HBPos.x + HBSize.x, HBPos.y + HBSize.y + 3);
-				ImGui::GetWindowDrawList()->AddRectFilled(HBS, HBE, ImColor(96, 246, 113, 220), 30.f, ImDrawCornerFlags_All);
+				ImGui::GetWindowDrawList()->AddRectFilled(HBS, HBE, greenColor, 0.0f, ImDrawCornerFlags_All);
 			}
 		}
+		if (ESPConfig::AmmoBar) {
+			ImU32 yellowColor = IM_COL32(255, 255, 0, 255);
+			ImVec2 ABS(centerPos.x, centerPos.y + rectSize.y + 2);
+			ImVec2 ABE(centerPos.x + rectSize.x, centerPos.y + rectSize.y + 5);
+			ImGui::GetWindowDrawList()->AddRectFilled(ABS, ABE, yellowColor, 0.0f, ImDrawCornerFlags_All);
+		}
+
 		if (ESPConfig::ShowLineToEnemy) {
 			ImVec2 LineStart, LineEnd;
 			LineStart = { centerPos.x + rectSize.x / 2 , centerPos.y };
@@ -464,16 +462,19 @@ namespace ESP
 			ImGui::GetWindowDrawList()->AddText(textPos, IM_COL32(255, 204, 0, 255), "20m");
 		}
 		if (ESPConfig::ShowWeaponESP) {
+			ImVec2 textPos(0, 0);
+			if (ESPConfig::AmmoBar)
+				centerPos.y += 5;
 			if (MenuConfig::BoxType == 1 || MenuConfig::BoxType == 3) {
 				centerPos.x -= 3;
 				centerPos.y -= 20;
 			}
 			if (MenuConfig::HealthBarType == 2) {
-				ImVec2 textPos(centerPos.x + 27, centerPos.y + 155);
+				textPos = { centerPos.x + 27, centerPos.y + 155 };
 				ImGui::GetWindowDrawList()->AddText(ImGui::GetIO().Fonts->Fonts[1], 15.0f, textPos, IM_COL32(255, 255, 255, 255), "W");
 			}
 			if (MenuConfig::HealthBarType == 0 || MenuConfig::HealthBarType == 1) {
-				ImVec2 textPos(centerPos.x + 27, centerPos.y + 150);
+				textPos = { centerPos.x + 27, centerPos.y + 150 };
 				ImGui::GetWindowDrawList()->AddText(ImGui::GetIO().Fonts->Fonts[1], 15.0f, textPos, IM_COL32(255, 255, 255, 255), "W");
 			}
 		}

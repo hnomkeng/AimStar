@@ -14,6 +14,8 @@ namespace Offset
 	inline DWORD GlobalVars;
 	inline DWORD InventoryServices;
 	inline DWORD PlantedC4;
+	inline DWORD InputSystem;
+	inline DWORD SpreadPointer;
 
 	struct
 	{
@@ -28,9 +30,14 @@ namespace Offset
 
 	struct
 	{
+		DWORD MovementServices = 0x10E8;		// CPlayer_MovementServices*
+		DWORD WeaponServices = 0x10A8;			// CPlayer_WeaponServices*
+		DWORD BulletServices = 0x16B8;			// CCSPlayer_BulletServices*
+		DWORD CameraServices = 0x10E0;			// CPlayer_CameraServices*
+		DWORD pClippingWeapon = 0x12B0;			// C_CSWeaponBase*
+
+		DWORD StartAccount = 0x1434;
 		DWORD isScoped = 0x13A8;
-		DWORD WeaponServices = 0x10A8;			// C_BasePlayerPawn::m_pWeaponServices
-		DWORD BulletServices = 0x16B8;			// C_CSPlayerPawn::m_pBulletServices
 		DWORD TotalHit = 0x40;
 		DWORD Pos = 0x1224;						// C_BasePlayerPawn::m_vOldOrigin
 		DWORD MaxHealth = 0x328;				// C_BaseEntity::m_iMaxHealth
@@ -39,14 +46,12 @@ namespace Offset
 		DWORD BoneArray = 0x1E0;				// CSkeletonInstance_::m_modelState + CGameSceneNode_::m_vecOrigin
 		DWORD angEyeAngles = 0x1518;
 		DWORD vecLastClipCameraPos = 0x1294;
-		DWORD pClippingWeapon = 0x12B0;
 		DWORD iShotsFired = 0x1420;
 		DWORD flFlashDuration = 0x1470;
 		DWORD aimPunchAngle = 0x171C;			// C_CSPlayerPawn::m_aimPunchAngle
 		DWORD aimPunchCache = 0x1740;
 		DWORD iIDEntIndex = 0x1544;
 		DWORD iTeamNum = 0x3BF;
-		DWORD CameraServices = 0x10E0;			// C_BasePlayerPawn::m_pCameraServices
 		DWORD iFov = 0x210;
 		DWORD iFovStart = 0x214;
 		DWORD fFlags = 0x3C8;
@@ -96,6 +101,14 @@ namespace Offset
 		DWORD m_nBombSite = 0xE84;
 	} C4;
 
+	struct
+	{
+		DWORD MoneyServices = 0x700;
+		DWORD Account = 0x40;
+		DWORD TotalCashSpent = 0x48;
+		DWORD CashSpentThisRound = 0x4C;
+	} InGameMoneyServices;
+
 	struct // C_BaseCSGrenadeProjectile
 	{ 
 		DWORD nSmokeEffectTickBegin = 0x1108; // int32_t
@@ -114,11 +127,12 @@ namespace Offset
 		const std::string GlobalVars = "48 89 0D ?? ?? ?? ?? 48 89 41";
 		const std::string EntityList = "48 8B 0D ?? ?? ?? ?? 48 89 7C 24 ?? 8B FA C1 EB";
 		const std::string LocalPlayerController = "48 8B 05 ?? ?? ?? ?? 48 85 C0 74 4F";
-		const std::string ViewAngles = "48 8B 0D ?? ?? ?? ?? E9 ?? ?? ?? ?? CC CC CC CC 40 55";
+		const std::string ViewAngles = "48 8B 0D ?? ?? ?? ?? E9 ?? ?? ?? ?? CC CC CC CC 48 C7 02";
 		const std::string ViewMatrix = "48 8D 0D ?? ?? ?? ?? 48 C1 E0 06";
 		const std::string LocalPlayerPawn = "48 8D 05 ?? ?? ?? ?? C3 CC CC CC CC CC CC CC CC 48 83 EC ?? 8B 0D";
 		const std::string ForceJump = "48 8B 05 ?? ?? ?? ?? 48 8D 1D ?? ?? ?? ?? 48 89 45";
 		const std::string PlantedC4 = "48 8B 15 ?? ?? ?? ?? FF C0 48 8D 4C 24 40";
+		const std::string InputSystem = "48 89 05 ?? ?? ?? ?? 48 8D 05";
 	}
 
 	bool UpdateOffsets();

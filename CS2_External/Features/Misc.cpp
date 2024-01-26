@@ -134,6 +134,73 @@ namespace Misc
 		Misc::StopKeyEvent('S', &sKeyPressed, 'W', 50.f);
 	}
 
+	void RadarHack(const CEntity& EntityList) noexcept
+	{
+		if (!MiscCFG::RadarHack)
+			return;
+
+		bool SpottedStatus = 1;
+		ProcessMgr.WriteMemory(EntityList.Pawn.Address + Offset::Pawn.bSpottedByMask, SpottedStatus);
+	}
+
+	void FovChanger(const CEntity& aLocalPlayer) noexcept
+	{
+		DWORD64 CameraServices = 0;
+		UINT CurrentFOV;
+		bool isScoped;
+		if (!ProcessMgr.ReadMemory<DWORD64>(aLocalPlayer.Pawn.Address + Offset::Pawn.CameraServices, CameraServices))
+			return;
+
+		float Dfov = MiscCFG::Fov;
+		// ProcessMgr.ReadMemory(CameraServices + Offset::Pawn.iFov, CurrentFOV);
+		ProcessMgr.ReadMemory(aLocalPlayer.Pawn.Address + Offset::Pawn.isScoped, isScoped);
+		if (!isScoped)
+		{
+			ProcessMgr.WriteMemory<float>(CameraServices + Offset::Pawn.iFov, Dfov);
+		}
+	}
+
+	void MoneyService(const CEntity& EntityList) noexcept
+	{
+		if (!MiscCFG::MoneyService)
+			return;
+
+		ImGuiWindowFlags flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize;
+
+		ImGui::Begin("Money Services", nullptr, flags);
+		{
+			if (ImGui::TreeNode(EntityList.Controller.PlayerName.c_str()))
+			{
+				std::stringstream ss;
+				ss << "Account: $" << EntityList.Controller.Money;
+				ImGui::TextColored(ImColor(0, 255, 0, 255), ss.str().c_str());
+				if (MiscCFG::ShowCashSpent)
+				{
+					std::stringstream sss;
+					sss << "ThisRound/Total: " << EntityList.Controller.CashSpent << "/" << EntityList.Controller.CashSpentTotal;
+					ImGui::TextColored(ImColor(255, 0, 0, 255), sss.str().c_str());
+				}
+				
+				ImGui::TreePop();
+			}
+		}
+	}
+
+	void Jitter(const CEntity& aLocalPlayer) noexcept
+	{
+
+		DWORD64 MovementServices;
+		bool Ducking = 1, unDuck = 0;
+		ProcessMgr.ReadMemory(aLocalPlayer.Pawn.Address + Offset::Pawn.MovementServices, MovementServices);
+		if (!MiscCFG::Jitter)
+		{
+			ProcessMgr.WriteMemory(MovementServices + 0x1E4, unDuck);
+		}
+		else {
+			ProcessMgr.WriteMemory(MovementServices + 0x1E4, Ducking);
+		}
+	}
+
 	void EdgeJump(const CEntity& aLocalPlayer) noexcept
 	{
 		// Unfinished

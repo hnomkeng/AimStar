@@ -14,6 +14,8 @@ bool CEntity::UpdateController(const DWORD64& PlayerControllerAddress)
 		return false;
 	if (!this->Controller.GetPlayerName())
 		return false;
+	if (!this->Controller.GetMoney())
+		return false;
 
 	this->Pawn.Address = this->Controller.GetPlayerPawnAddress();
 
@@ -58,6 +60,21 @@ bool CEntity::UpdatePawn(const DWORD64& PlayerPawnAddress)
 		return false;
 
 	return true;
+}
+
+bool PlayerController::GetMoney()
+{
+	DWORD64 MoneyServices;
+	if (!ProcessMgr.ReadMemory(Address + Offset::InGameMoneyServices.MoneyServices, MoneyServices))
+	{
+		return false;
+	}
+	else {
+		GetDataAddressWithOffset<int>(MoneyServices, Offset::InGameMoneyServices.Account, this->Money);
+		GetDataAddressWithOffset<int>(MoneyServices, Offset::InGameMoneyServices.CashSpentThisRound, this->CashSpent);
+		GetDataAddressWithOffset<int>(MoneyServices, Offset::InGameMoneyServices.TotalCashSpent, this->CashSpentTotal);
+		return true;
+	}
 }
 
 bool PlayerController::GetTeamID()
@@ -108,13 +125,13 @@ bool PlayerPawn::GetSpotted()
 bool PlayerPawn::GetWeaponName()
 {
 	DWORD64 WeaponNameAddress = 0;
-	char Buffer[40]{};
+	char Buffer[64]{};
 	
 	WeaponNameAddress = ProcessMgr.TraceAddress(this->Address + Offset::Pawn.pClippingWeapon, { 0x10,0x20 ,0x0 });
 	if (WeaponNameAddress == 0)
 		return false;
 
-	if (!ProcessMgr.ReadMemory(WeaponNameAddress, Buffer, 40))
+	if (!ProcessMgr.ReadMemory(WeaponNameAddress, Buffer, 64))
 		return false;
 
 	WeaponName = std::string(Buffer);

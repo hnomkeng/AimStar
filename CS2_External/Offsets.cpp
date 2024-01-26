@@ -25,7 +25,11 @@ bool Offset::UpdateOffsets()
 		return false;
 
 	DWORD64 ServerDLL = reinterpret_cast<DWORD64>(ProcessMgr.GetProcessModuleHandle("server.dll"));
-	if (ClientDLL == 0)
+	if (ServerDLL == 0)
+		return false;
+
+	DWORD64 InputDLL = reinterpret_cast<DWORD64>(ProcessMgr.GetProcessModuleHandle("inputsystem.dll"));
+	if (InputDLL == 0)
 		return false;
 
 	DWORD64 TempAddress = 0;
@@ -60,7 +64,7 @@ bool Offset::UpdateOffsets()
 	if (!ProcessMgr.ReadMemory(TempAddress, TempAddress))
 		return false;
 
-	Offset::ViewAngle = TempAddress + 0x6140 - ClientDLL;
+	Offset::ViewAngle = TempAddress + 0x8F30 - ClientDLL;
 
 	TempAddress = SearchOffsets(Offset::Signatures::LocalPlayerPawn, ClientDLL);
 	if (TempAddress == 0)
@@ -79,5 +83,15 @@ bool Offset::UpdateOffsets()
 		return false;
 
 	Offset::PlantedC4 = TempAddress - ClientDLL;
+
+	TempAddress = SearchOffsets(Offset::Signatures::InputSystem, InputDLL);
+	if (TempAddress == 0)
+		return false;
+
+	Offset::InputSystem = TempAddress - InputDLL;
+
+	TempAddress = ProcessMgr.TraceAddress(ClientDLL + 0x1810CB8, { 0x8, 0xC38 });
+	Offset::SpreadPointer = TempAddress;
+
 	return true;
 }

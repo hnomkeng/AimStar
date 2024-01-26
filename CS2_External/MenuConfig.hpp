@@ -11,22 +11,24 @@ namespace MenuConfig
 	struct {
 		// 0: Visual 1: Aimbot 2: Misc 3: Config
 		int MenuPage = 0;
-		ImVec2 LogoPos		= ImVec2(30.f, 30.f);
-		ImVec2 Button1Pos	= ImVec2(30.f, 142.f);
-		ImVec2 Button2Pos	= ImVec2(30.f, 142.f + 90.f);
-		ImVec2 Button3Pos	= ImVec2(30.f, 142.f + 180.f);
-		ImVec2 Button4Pos	= ImVec2(30.f, 142.f + 270.f);
-		ImVec2 ChildPos		= ImVec2(257.f, 20.f);
-		ImVec2 ChildSize	= ImVec2(574.f, 474.f);
+		ImVec2 LogoPos				= ImVec2(30.f, 30.f);
+		ImVec2 Logo2Pos				= ImVec2(25.f, 25.f);
+		ImVec2 Button1Pos			= ImVec2(30.f, 142.f);
+		ImVec2 Button2Pos			= ImVec2(30.f, 142.f + 90.f);
+		ImVec2 Button3Pos			= ImVec2(30.f, 142.f + 180.f);
+		ImVec2 Button4Pos			= ImVec2(30.f, 142.f + 270.f);
+		ImVec2 ChildPos				= ImVec2(257.f, 20.f);
+		ImVec2 ChildSize			= ImVec2(574.f, 474.f);
+		ImColor BorderColor_Yellow	= ImColor(255, 204, 0, 255);
+		ImColor BorderColor_Purple	= ImColor(255, 0, 238, 255);
 	} WCS;	// Window Component Settings
 
-	// 0: English 1: SimplifiedChinese
 	inline int Language = 0;
+	inline int Theme = 0;
 
 	inline bool AirJump = false;
 	inline float ComboWidth = 100.f;
 	inline float SliderWidth = 150.f;
-	inline int MenuStyle = 0;
 	// 0: Window 1: Collapse
 	inline int WindowStyle = 0;
 
@@ -90,7 +92,7 @@ namespace ESPConfig
 	inline bool OutLine = true;
 	// 0: normal 1: Flat
 	inline int HeadBoxStyle = 0;
-	inline float BoxRounding = RandomPara<float>(0.0f, 5.0f);;
+	inline float BoxRounding = RandomPara<float>(0.0f, 3.0f);;
 	inline float BoxAlpha = 0.35f;
 	inline bool ShowLineToEnemy = false;
 	inline ImColor LineToEnemyColor = ImColor(255, 255, 255, 220);
@@ -176,6 +178,12 @@ namespace MiscCFG
 	inline bool FastStop = false;
 	inline bool SpecList = false;
 	inline bool EnemySensor = false;
+	inline bool RadarHack = false;
+	inline bool MoneyService = false;
+	inline bool ShowCashSpent = false;
+	inline float Fov = 0.0f;
 	inline ImColor BombTimerCol = ImColor(255, 120, 0, 255);
 	inline ImColor GlowColor = ImColor(255, 0, 0, 100);
+
+	inline bool Jitter = false;
 }

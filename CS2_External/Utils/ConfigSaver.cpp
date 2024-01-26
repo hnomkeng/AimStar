@@ -3,6 +3,8 @@
 #include <string>
 #include <sstream>
 #include "ConfigSaver.hpp"
+#include "../Features/StyleChanger.h"
+#include "../Resources/Language.h"
 #include "../MenuConfig.hpp"
 #include "../TriggerBot.h"
 #include "../AimBot.hpp"
@@ -18,7 +20,7 @@ namespace MyConfigSaver {
 
         YAML::Emitter emitter;
 
-        emitter << YAML::Comment("AimStar Config File\nVersion: 3.7\nAuthor: " + author);
+        emitter << YAML::Comment("AimStar Config File\nVersion: 3.8\nAuthor: " + author);
         emitter << YAML::BeginMap;
 
         emitter << YAML::Key << "ESP";
@@ -203,6 +205,7 @@ namespace MyConfigSaver {
         emitter << YAML::Key << "a" << YAML::Value << MenuConfig::HeadShootLineColor.Value.w;
         emitter << YAML::EndMap;
         emitter << YAML::Key << "WorkInSpec" << YAML::Value << MiscCFG::WorkInSpec;
+        emitter << YAML::Key << "Fov" << YAML::Value << MiscCFG::Fov;
         emitter << YAML::Key << "NoFlash" << YAML::Value << MiscCFG::NoFlash;
         emitter << YAML::Key << "Watermark" << YAML::Value << MiscCFG::WaterMark;
         emitter << YAML::Key << "CheatList" << YAML::Value << MiscCFG::CheatList;
@@ -219,8 +222,16 @@ namespace MyConfigSaver {
         emitter << YAML::Key << "FastStop" << YAML::Value << MiscCFG::FastStop;
         emitter << YAML::Key << "SpecList" << YAML::Value << MiscCFG::BunnyHop;
         emitter << YAML::Key << "Glow" << YAML::Value << MiscCFG::EnemySensor;
+        emitter << YAML::Key << "RadarHack" << YAML::Value << MiscCFG::RadarHack;
+        emitter << YAML::Key << "MoneyService";
+        emitter << YAML::Value;
+        emitter << YAML::BeginMap;
+        emitter << YAML::Key << "Enable" << YAML::Value << MiscCFG::MoneyService;
+        emitter << YAML::Key << "ShowCashSpent" << YAML::Value << MiscCFG::ShowCashSpent;
+        emitter << YAML::EndMap;
         emitter << YAML::Key << "TeamCheck" << YAML::Value << MenuConfig::TeamCheck;
         emitter << YAML::Key << "AntiRecord" << YAML::Value << MenuConfig::BypassOBS;
+        emitter << YAML::Key << "Jitter" << YAML::Value << MiscCFG::Jitter;
         emitter << YAML::EndMap;
 
         emitter << YAML::Key << "Aimbot";
@@ -258,8 +269,8 @@ namespace MyConfigSaver {
         emitter << YAML::Key << "Menu";
         emitter << YAML::Value;
         emitter << YAML::BeginMap;
-        emitter << YAML::Key << "Theme" << YAML::Value << MenuConfig::MenuStyle;
-        emitter << YAML::Key << "WindowStyle" << YAML::Value << MenuConfig::WindowStyle;
+        emitter << YAML::Key << "Theme" << YAML::Value << MenuConfig::Theme;
+        emitter << YAML::Key << "Language" << YAML::Value << MenuConfig::Language;
         emitter << YAML::EndMap;
 
         emitter << YAML::EndMap;
@@ -389,6 +400,7 @@ namespace MyConfigSaver {
             MenuConfig::HeadShootLineColor.Value.z = config["Misc"]["HeadShootLineColor"]["b"].as<float>();
             MenuConfig::HeadShootLineColor.Value.w = config["Misc"]["HeadShootLineColor"]["a"].as<float>();
             MiscCFG::WorkInSpec = config["Misc"]["WorkInSpec"].as<bool>();
+            MiscCFG::Fov = config["Misc"]["Fov"].IsDefined() ? config["Misc"]["Fov"].as<float>() : 0.0f;
             MiscCFG::NoFlash = config["Misc"]["NoFlash"].as<bool>();
             MiscCFG::WaterMark = config["Misc"]["Watermark"].as<bool>();
             MiscCFG::CheatList = config["Misc"]["CheatList"].as<bool>();
@@ -401,8 +413,12 @@ namespace MyConfigSaver {
             MiscCFG::FastStop = config["Misc"]["FastStop"].as<bool>();
             MiscCFG::SpecList = config["Misc"]["SpecList"].as<bool>();
             MiscCFG::EnemySensor = config["Misc"]["Glow"].as<bool>();
+            MiscCFG::RadarHack = config["Misc"]["RadarHack"].IsDefined() ? config["Misc"]["RadarHack"].as<bool>() : false;
+            MiscCFG::MoneyService = config["Misc"]["MoneyService"]["Enable"].IsDefined() ? config["Misc"]["MoneyService"]["Enable"].as<bool>() : false;
+            MiscCFG::ShowCashSpent = config["Misc"]["MoneyService"]["ShowCashSpent"].IsDefined() ? config["Misc"]["MoneyService"]["ShowCashSpent"].as<bool>() : false;
             MenuConfig::TeamCheck = config["Misc"]["TeamCheck"].as<bool>();
             MenuConfig::BypassOBS = config["Misc"]["AntiRecord"].as<bool>();
+            MiscCFG::Jitter = config["Misc"]["Jitter"].IsDefined() ? config["Misc"]["Jitter"].as<bool>() : false;;
         }
         if (config["Aimbot"])
         {
@@ -430,10 +446,13 @@ namespace MyConfigSaver {
         }
         if (config["Menu"])
         {
-            MenuConfig::MenuStyle = config["Menu"]["Theme"].as<int>();
-            MenuConfig::WindowStyle = config["Menu"]["WindowStyle"].as<int>();
+            MenuConfig::Theme = config["Menu"]["Theme"].as<int>();
+            MenuConfig::Language = config["Menu"]["Language"].IsDefined() ? config["Menu"]["Language"].as<int>() : 0;
         }
 
+        AimControl::SetHotKey(MenuConfig::AimBotHotKey);
+        StyleChanger::UpdateSkin(MenuConfig::Theme);
+        Lang::ChangeLang(MenuConfig::Language);
 
         std::cout << "[Info] Configuration loaded from " << MenuConfig::path + '\\' + filename << std::endl;
     }

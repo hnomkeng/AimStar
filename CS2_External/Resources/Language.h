@@ -41,6 +41,7 @@ namespace Lang
 		inline static const char* BoxType;
 		inline static const char* HealthNum;
 		inline static const char* Ammo;
+		inline static const char* ScopedESP;
 
 		inline static const char* BoxType_Normal;
 		inline static const char* BoxType_Edge;
@@ -67,6 +68,9 @@ namespace Lang
 		inline static const char* SmoothSlider;
 		inline static const char* BoneList;
 		inline static const char* Tip;
+		inline static const char* ScopeOnly;
+		inline static const char* AimLock;
+		inline static const char* AutoShot;
 
 		inline static const char* Bone_1;
 		inline static const char* Bone_2;
@@ -143,6 +147,9 @@ namespace Lang
 		inline static const char* ShowCashSpent;
 		inline static const char* EnemySensor;
 		inline static const char* RadarHack;
+		inline static const char* NoSmoke;
+		inline static const char* SmokeColor;
+		inline static const char* fovchanger;
 		
 		inline static const char* FakeDuck;
 
@@ -213,6 +220,7 @@ namespace Lang
 		ESPtext.BoxType = u8"Box Type:";
 		ESPtext.HealthNum = u8"Health Number";
 		ESPtext.Ammo = u8"Ammo";
+		ESPtext.ScopedESP = u8"Show Scoped";
 
 		ESPtext.BoxType_Normal = u8"Normal";
 		ESPtext.BoxType_Edge = u8"Dynamic";
@@ -233,6 +241,9 @@ namespace Lang
 		AimbotText.SmoothSlider = u8"Smooth: ";
 		AimbotText.BoneList = u8"Bone       ";
 		AimbotText.Tip = u8"Aimbot will not work while the menu is opened";
+		AimbotText.ScopeOnly = u8"Scope Only";
+		AimbotText.AimLock = u8"Aim Lock";
+		AimbotText.AutoShot = u8"Auto Shot";
 
 		// Radar
 		RadarText.Toggle = u8"Show Radar";
@@ -294,6 +305,9 @@ namespace Lang
 		MiscText.RadarHack = u8"Radar Hack";
 		MiscText.FastStop = u8"Fast Stop";
 		MiscText.VisCheckDisable = u8"Visible Check DISABLED";
+		MiscText.NoSmoke = u8"No Smoke";
+		MiscText.SmokeColor = u8"Smoke Color";
+		MiscText.fovchanger = u8"Fov Changer: ";
 
 		MiscText.FakeDuck = u8"Fake Duck";
 

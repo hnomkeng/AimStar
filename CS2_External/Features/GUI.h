@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "..\MenuConfig.hpp"
 #include "..\Render.hpp"
 #include "..\AimBot.hpp"
@@ -6,6 +6,7 @@
 #include "..\TriggerBot.h"
 #include "..\Utils\ConfigMenu.hpp"
 #include "..\Utils\ConfigSaver.hpp"
+#include "..\Utils\Updater.h"
 
 #include "StyleChanger.h"
 #include "..\Resources\Language.h"
@@ -28,6 +29,7 @@ namespace GUI
 	{
 		if (AS_Logo == NULL)
 		{
+			// Updater::CheckForUpdates();
 			Gui.LoadTextureFromMemory(Images::AS_Logo, sizeof Images::AS_Logo, &AS_Logo, &LogoW, &LogoH);
 			Gui.LoadTextureFromMemory(Images::NL_Logo, sizeof Images::NL_Logo, &NL_Logo, &LogoW2, &LogoH2);
 			Gui.LoadTextureFromMemory(Images::VisualButton, sizeof Images::VisualButton, &MenuButton1, &buttonW, &buttonH);
@@ -45,12 +47,14 @@ namespace GUI
 		float checkboxPosX = ImGui::GetColumnOffset() + ColumnContentWidth - ContentWidth;
 		ImGui::SetCursorPosX(checkboxPosX);
 	}
-	void PutSwitch(const char* string, float CursorX, float ContentWidth, bool* v, bool ColorEditor = false, const char* lable = NULL, float col[4] = NULL)
+	void PutSwitch(const char* string, float CursorX, float ContentWidth, bool* v, bool ColorEditor = false, const char* lable = NULL, float col[4] = NULL, const char* Tip = NULL)
 	{
 		ImGui::PushID(string);
 		float CurrentCursorX = ImGui::GetCursorPosX();
 		ImGui::SetCursorPosX(CurrentCursorX + CursorX);
 		ImGui::TextDisabled(string);
+		if (Tip && ImGui::IsItemHovered())
+			ImGui::SetTooltip(Tip);
 		ImGui::SameLine();
 		if (ColorEditor) {
 			AlignRight(ContentWidth + ImGui::GetFrameHeight() + 8);
@@ -62,6 +66,19 @@ namespace GUI
 		}
 		
 		Gui.SwitchButton(string, v);
+		ImGui::PopID();
+	}
+	void PutColorEditor(const char* text, const char* lable, float CursorX, float ContentWidth, float col[4], const char* Tip = NULL)
+	{
+		ImGui::PushID(text);
+		float CurrentCursorX = ImGui::GetCursorPosX();
+		ImGui::SetCursorPosX(CurrentCursorX + CursorX);
+		ImGui::TextDisabled(text);
+		if (Tip && ImGui::IsItemHovered())
+			ImGui::SetTooltip(Tip);
+		ImGui::SameLine();
+		AlignRight(ContentWidth + ImGui::GetFrameHeight() + 8);
+		ImGui::ColorEdit4(lable, col, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview);
 		ImGui::PopID();
 	}
 	void PutSliderFloat(const char* string, float CursorX, float* v, const void* p_min, const void* p_max, const char* format)
@@ -98,7 +115,6 @@ namespace GUI
 	void NewGui()
 	{
 		LoadImages();
-		ImColor BorderColor;
 		ImTextureID ImageID;
 		ImVec2 LogoSize, LogoPos;
 		switch (MenuConfig::Theme)
@@ -107,21 +123,28 @@ namespace GUI
 			ImageID = (void*)AS_Logo;
 			LogoSize = ImVec2(LogoW, LogoH);
 			LogoPos = MenuConfig::WCS.LogoPos;
-			BorderColor = MenuConfig::WCS.BorderColor_Yellow;
+			MenuConfig::ButtonBorderColor = MenuConfig::WCS.BorderColor_Yellow;
 			break;
 		case 1:
 			ImageID = (void*)NL_Logo;
 			LogoSize = ImVec2(LogoW2, LogoH2);
 			LogoPos = MenuConfig::WCS.Logo2Pos;
-			BorderColor = MenuConfig::WCS.BorderColor_Purple;
+			MenuConfig::ButtonBorderColor = MenuConfig::WCS.BorderColor_Purple;
+			break;
+		case 2:
+			ImageID = (void*)AS_Logo;
+			LogoSize = ImVec2(LogoW, LogoH);
+			LogoPos = MenuConfig::WCS.LogoPos;
+			MenuConfig::ButtonBorderColor = MenuConfig::ButtonBorderColor;
 			break;
 		default:
 			ImageID = (void*)AS_Logo;
 			LogoSize = ImVec2(LogoW, LogoH);
 			LogoPos = MenuConfig::WCS.LogoPos;
-			BorderColor = MenuConfig::WCS.BorderColor_Yellow;
+			MenuConfig::ButtonBorderColor = MenuConfig::WCS.BorderColor_Yellow;
 			break;
 		}
+		ImColor BorderColor = MenuConfig::ButtonBorderColor;
 
 		char TempText[256];
 		ImGuiWindowFlags Flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
@@ -210,6 +233,7 @@ namespace GUI
 						PutSwitch(Lang::ESPtext.Ammo, 10.f, ImGui::GetFrameHeight() * 1.7, &ESPConfig::AmmoBar);
 						PutSwitch(Lang::ESPtext.Distance, 10.f, ImGui::GetFrameHeight() * 1.7, &ESPConfig::ShowDistance);
 						PutSwitch(Lang::ESPtext.PlayerName, 10.f, ImGui::GetFrameHeight() * 1.7, &ESPConfig::ShowPlayerName);
+						PutSwitch(Lang::ESPtext.ScopedESP, 10.f, ImGui::GetFrameHeight() * 1.7, &ESPConfig::ShowIsScoped);
 						PutSwitch(Lang::ESPtext.VisCheck, 10.f, ImGui::GetFrameHeight() * 1.7, &ESPConfig::VisibleCheck, true, "###VisibleCol", reinterpret_cast<float*>(&ESPConfig::VisibleColor));
 					}
 					
@@ -291,16 +315,22 @@ namespace GUI
 					PutSwitch(Lang::AimbotText.Enable, 10.f, ImGui::GetFrameHeight() * 1.7, &MenuConfig::AimBot);
 					if (MenuConfig::AimBot)
 					{
-						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10.f);
-						ImGui::TextDisabled(Lang::AimbotText.HotKeyList);
-						ImGui::SameLine();
-						if (ImGui::Combo("###AimKey", &MenuConfig::AimBotHotKey, "LALT\0LBUTTON\0RBUTTON\0XBUTTON1\0XBUTTON2\0CAPITAL\0SHIFT\0CONTROL\0"))
+						if (!MenuConfig::AimAlways)
 						{
-							AimControl::SetHotKey(MenuConfig::AimBotHotKey);
+							ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10.f);
+							ImGui::TextDisabled(Lang::AimbotText.HotKeyList);
+							ImGui::SameLine();
+							if (ImGui::Combo("###AimKey", &MenuConfig::AimBotHotKey, "LALT\0LBUTTON\0RBUTTON\0XBUTTON1\0XBUTTON2\0CAPITAL\0SHIFT\0CONTROL\0"))
+							{
+								AimControl::SetHotKey(MenuConfig::AimBotHotKey);
+							}
+							PutSwitch(Lang::AimbotText.Toggle, 10.f, ImGui::GetFrameHeight() * 1.7, &MenuConfig::AimToggleMode);
 						}
-						PutSwitch(Lang::AimbotText.Toggle, 10.f, ImGui::GetFrameHeight() * 1.7, &MenuConfig::AimToggleMode);
+						PutSwitch(Lang::AimbotText.AimLock, 10.f, ImGui::GetFrameHeight() * 1.7, &MenuConfig::AimAlways);
 						PutSwitch(Lang::AimbotText.DrawFov, 10.f, ImGui::GetFrameHeight() * 1.7, &ESPConfig::DrawFov, true, "###FOVcol", reinterpret_cast<float*>(&MenuConfig::FovCircleColor));
 						PutSwitch(Lang::AimbotText.VisCheck, 10.f, ImGui::GetFrameHeight() * 1.7, &MenuConfig::VisibleCheck);
+						PutSwitch(Lang::AimbotText.ScopeOnly, 10.f, ImGui::GetFrameHeight() * 1.7, &AimControl::ScopeOnly);
+						PutSwitch(Lang::AimbotText.AutoShot, 10.f, ImGui::GetFrameHeight() * 1.7, &AimControl::AutoShot);
 						PutSliderFloat(Lang::AimbotText.FovSlider, 10.f, &AimControl::AimFov, &FovMin, &FovMax, "%.1f");
 						PutSliderFloat(Lang::AimbotText.SmoothSlider, 10.f, &AimControl::Smooth, &SmoothMin, &SmoothMax, "%.1f");
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10.f);
@@ -344,7 +374,7 @@ namespace GUI
 							ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5.f);
 							ImGui::TextDisabled(Lang::TriggerText.HotKeyList);
 							ImGui::SameLine();
-							if (ImGui::Combo("###TriggerbotKey", &MenuConfig::TriggerHotKey, "LALT\0LBUTTON\0RBUTTON\0XBUTTON1\0XBUTTON2\0CAPITAL\0SHIFT\0CONTROL\0"))
+							if (ImGui::Combo("###TriggerbotKey", &MenuConfig::TriggerHotKey, "LALT\0RBUTTON\0XBUTTON1\0XBUTTON2\0CAPITAL\0SHIFT\0CONTROL\0"))
 							{
 								TriggerBot::SetHotKey(MenuConfig::TriggerHotKey);
 							}
@@ -359,16 +389,18 @@ namespace GUI
 
 				if (MenuConfig::WCS.MenuPage == 2)
 				{
-					float FovMin = -5.f, FovMax = 0.f;
+					int FovMin = 60, FovMax = 140;
 					ImGui::Columns(2, nullptr, false);
 					ImGui::SetCursorPos(ImVec2(15.f, 24.f));
 					ImGui::SeparatorText(ICON_FA_SUN" Misc");
 
 					PutSwitch(Lang::MiscText.HeadshotLine, 10.f, ImGui::GetFrameHeight() * 1.7, &MenuConfig::ShowHeadShootLine);
 					PutSwitch(Lang::MiscText.SpecCheck, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::WorkInSpec);
-					PutSliderFloat("FOV: ", 10.f, &MiscCFG::Fov , &FovMin, &FovMax, "%.1f");
+					PutSliderInt(Lang::MiscText.fovchanger, 10.f, &MiscCFG::Fov , &FovMin, &FovMax, "%d");
 					PutSwitch(Lang::MiscText.NoFlash, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::NoFlash);
 					PutSwitch(Lang::MiscText.FastStop, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::FastStop);
+					PutSwitch(Lang::MiscText.NoSmoke, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::NoSmoke);
+					PutSwitch(Lang::MiscText.SmokeColor, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::SmokeColored, true, "###SmokeColor", reinterpret_cast<float*>(&MiscCFG::SmokeColor));
 					PutSwitch(Lang::MiscText.HitSound, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::HitSound);
 					PutSwitch(Lang::MiscText.bmbTimer, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::bmbTimer, true, "###bmbTimerCol", reinterpret_cast<float*>(&MiscCFG::BombTimerCol));
 					PutSwitch(Lang::MiscText.Bhop, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::BunnyHop);
@@ -384,7 +416,6 @@ namespace GUI
 						PutSwitch(Lang::MiscText.ShowCashSpent, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::ShowCashSpent);
 					PutSwitch(Lang::MiscText.EnemySensor, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::EnemySensor);
 					PutSwitch(Lang::MiscText.Watermark, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::WaterMark);
-					PutSwitch(Lang::MiscText.CheatList, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::CheatList);
 					PutSwitch(Lang::MiscText.TeamCheck, 10.f, ImGui::GetFrameHeight() * 1.7, &MenuConfig::TeamCheck);
 
 					ImGui::NewLine();
@@ -401,17 +432,63 @@ namespace GUI
 					ImGui::SeparatorText(ICON_FA_HEART" Menu Settings");
 					PutSwitch(Lang::MiscText.AntiRecord, 5.f, ImGui::GetFrameHeight() * 1.7, &MenuConfig::BypassOBS);
 					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5.f);
-					ImGui::TextDisabled(Lang::MiscText.ThemeList);
-					ImGui::SameLine();
-					if (ImGui::Combo("###Theme", &MenuConfig::Theme, "AimStar\0NeverLose\0"))
-						StyleChanger::UpdateSkin(MenuConfig::Theme);
-
-					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5.f);
 					ImGui::TextDisabled(Lang::MiscText.LanguageList);
 					ImGui::SameLine();
-					if (ImGui::Combo("###Language", &MenuConfig::Language, 
+					if (ImGui::Combo("###Language", &MenuConfig::Language,
 						"English\0Danish\0German\0Polish\0Portuguese\0Russian\0Simplified Chinese\0Slovak\0French\0Turkish\0Hungarian\0Dutch\0Cezch\0Spanish\0Romanian\0"))
 						Lang::ChangeLang(MenuConfig::Language);
+					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5.f);
+					ImGui::TextDisabled(Lang::MiscText.ThemeList);
+					ImGui::SameLine();
+					if (ImGui::Combo("###Theme", &MenuConfig::Theme, "AimStar\0NeverLose\0Custom\0"))
+						StyleChanger::UpdateSkin(MenuConfig::Theme);
+					if (MenuConfig::Theme == 2)
+					{	
+						ImColor windowBgColor = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+						ImColor borderColor = ImGui::GetStyleColorVec4(ImGuiCol_Border);
+						ImColor childBgColor = ImGui::GetStyleColorVec4(ImGuiCol_ChildBg);
+						ImColor ButtonColor = ImGui::GetStyleColorVec4(ImGuiCol_Button);
+						ImColor ButtonHovered = ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered);
+						ImColor ButtonActive = ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive);
+						ImColor FrameBgColor = ImGui::GetStyleColorVec4(ImGuiCol_FrameBg);
+						ImColor FrameHovered = ImGui::GetStyleColorVec4(ImGuiCol_FrameBgHovered);
+						ImColor FrameActive = ImGui::GetStyleColorVec4(ImGuiCol_FrameBgActive);
+						ImColor Header = ImGui::GetStyleColorVec4(ImGuiCol_Header);
+						ImColor HeaderActive = ImGui::GetStyleColorVec4(ImGuiCol_HeaderActive);
+						ImColor HeaderHovered = ImGui::GetStyleColorVec4(ImGuiCol_HeaderHovered);
+						ImColor ScrollBg = ImGui::GetStyleColorVec4(ImGuiCol_ScrollbarBg);
+						// ########################################
+						ImGui::SeparatorText("Theme Color Settings");
+						PutColorEditor("Button Border", "###ThemeCol1", 5.f, 0.f, reinterpret_cast<float*>(&MenuConfig::ButtonBorderColor));
+						PutColorEditor("Border", "###ThemeCol2", 5.f, 0.f, reinterpret_cast<float*>(&borderColor));
+						PutColorEditor("Button", "###ThemeCol3", 5.f, 0.f, reinterpret_cast<float*>(&ButtonColor));
+						PutColorEditor("Button Hovered", "###ThemeCol4", 5.f, 0.f, reinterpret_cast<float*>(&ButtonHovered));
+						PutColorEditor("Button Active", "###ThemeCol5", 5.f, 0.f, reinterpret_cast<float*>(&ButtonActive));
+						PutColorEditor("Child Window Bg", "###ThemeCol6", 5.f, 0.f, reinterpret_cast<float*>(&childBgColor));
+						PutColorEditor("Frame Bg", "###ThemeCol7", 5.f, 0.f, reinterpret_cast<float*>(&FrameBgColor));
+						PutColorEditor("Frame Bg Hovered", "###ThemeCol8", 5.f, 0.f, reinterpret_cast<float*>(&FrameHovered));
+						PutColorEditor("Frame Bg Active", "###ThemeCol9", 5.f, 0.f, reinterpret_cast<float*>(&FrameActive));
+						PutColorEditor("Header", "###ThemeCol10", 5.f, 0.f, reinterpret_cast<float*>(&Header));
+						PutColorEditor("Header Active", "###ThemeCol11", 5.f, 0.f, reinterpret_cast<float*>(&HeaderActive));
+						PutColorEditor("Header Hovered", "###ThemeCol12", 5.f, 0.f, reinterpret_cast<float*>(&HeaderHovered));
+						PutColorEditor("Scrollbar Bg", "###ThemeCol13", 5.f, 0.f, reinterpret_cast<float*>(&ScrollBg));
+						PutColorEditor("Window Bg", "###ThemeCol14", 5.f, 0.f, reinterpret_cast<float*>(&windowBgColor));
+
+						// Update Color
+						ImGui::GetStyle().Colors[ImGuiCol_Border] = borderColor;
+						ImGui::GetStyle().Colors[ImGuiCol_Button] = ButtonColor;
+						ImGui::GetStyle().Colors[ImGuiCol_ButtonActive] = ButtonActive;
+						ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered] = ButtonHovered;
+						ImGui::GetStyle().Colors[ImGuiCol_FrameBg] = FrameBgColor;
+						ImGui::GetStyle().Colors[ImGuiCol_FrameBgHovered] = FrameHovered;
+						ImGui::GetStyle().Colors[ImGuiCol_FrameBgActive] = FrameActive;
+						ImGui::GetStyle().Colors[ImGuiCol_WindowBg] = windowBgColor;
+						ImGui::GetStyle().Colors[ImGuiCol_ChildBg] = childBgColor;
+						ImGui::GetStyle().Colors[ImGuiCol_Header] = Header;
+						ImGui::GetStyle().Colors[ImGuiCol_HeaderActive] = HeaderActive;
+						ImGui::GetStyle().Colors[ImGuiCol_HeaderHovered] = HeaderHovered;
+						ImGui::GetStyle().Colors[ImGuiCol_ScrollbarBg] = ScrollBg;
+					}
 
 					ImGui::NewLine();
 					PutSwitch(Lang::ReadMeText.DiscordButton, 5.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::mother);

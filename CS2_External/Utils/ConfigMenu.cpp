@@ -122,7 +122,11 @@ namespace ConfigMenu {
 	}
 
 	void ResetToDefault() {
+		MiscCFG::SmokeColored = false;
+		MiscCFG::SmokeColor = ImColor(255, 0, 0, 255);
+		MiscCFG::NoSmoke = false;
 		MiscCFG::Jitter = false;
+		ESPConfig::ShowIsScoped = false;
 		ESPConfig::AmmoBar = false;
 		ESPConfig::OutLine = true;
 		ESPConfig::ShowHealthNum = false;
@@ -133,14 +137,13 @@ namespace ConfigMenu {
 		ESPConfig::FilledVisBox = false;
 		MiscCFG::MoneyService = false;
 		MiscCFG::ShowCashSpent = false;
-		MiscCFG::Fov = 0.f;
+		MiscCFG::FovHacker = false;
 		MiscCFG::RadarHack = false;
 		MiscCFG::SpecList = false;
 		MiscCFG::BombTimerCol = ImColor(255, 120, 0, 255);
 		MiscCFG::bmbTimer = false;
 		ESPConfig::VisibleColor = ImColor(255, 196, 0, 255);
 		ESPConfig::VisibleCheck = false;
-		MiscCFG::GlowColor = ImColor(255, 0, 0, 100);;
 		MiscCFG::EnemySensor = false;
 		MenuConfig::AirJump = false;
 		MenuConfig::Theme = 0;
@@ -194,6 +197,8 @@ namespace ConfigMenu {
 		MenuConfig::TriggerHotKey = 0;
 		TriggerBot::SetHotKey(MenuConfig::TriggerHotKey);
 		AimControl::RCSScale = ImVec2(1.2f, 1.4f);
+		AimControl::ScopeOnly = false;
+		AimControl::AutoShot = false;
 		MenuConfig::FovLineColor = ImVec4(55, 55, 55, 220);
 		ESPConfig::LineToEnemyColor = ImVec4(255, 255, 255, 220);
 		CrosshairsCFG::ShowCrossHair = false;
@@ -218,7 +223,6 @@ namespace ConfigMenu {
 		MiscCFG::WorkInSpec = true;
 		MiscCFG::NoFlash = false;
 		MiscCFG::WaterMark = false;
-		MiscCFG::CheatList = false;
 		MiscCFG::HitSound = false;
 		MiscCFG::FastStop = false;
 

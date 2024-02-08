@@ -245,7 +245,6 @@ void Cheats::Run()
 
 			// Draw Distance
 			Render::DrawDistance(LocalEntity, Entity, Rect);
-			Render::DrawHealth(Entity, Rect);
 		}
 		Glow::Run(Entity);
 		// SpecList::GetSpectatorList(Entity, LocalEntity, EntityAddress);
@@ -265,10 +264,11 @@ void Cheats::Run()
 	Misc::HitSound(LocalEntity, PreviousTotalHits);
 	Misc::NoFlash(LocalEntity);
 	Misc::FastStop();
+	Misc::NadeManager(gGame);
 	Misc::FovChanger(LocalEntity);
 	Misc::Watermark();
-	Misc::CheatList();	
-	Misc::Jitter(LocalEntity);
+	Misc::FakeDuck(LocalEntity);
+	Misc::BunnyHop(LocalEntity);
 
 	// Fov line
 	Render::DrawFov(LocalEntity, MenuConfig::FovLineSize, MenuConfig::FovLineColor, 1);
@@ -278,11 +278,8 @@ void Cheats::Run()
 	
 	// CrossHair
 	TriggerBot::TargetCheck(LocalEntity);
-	Bunnyhop::AirCheck(LocalEntity);
+	Misc::AirCheck(LocalEntity);
 	RenderCrossHair(ImGui::GetBackgroundDrawList());
-
-	// Bhop
-	Bunnyhop::Run(LocalEntity);
 
 	bmb::RenderWindow();
 

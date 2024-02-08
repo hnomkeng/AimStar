@@ -20,7 +20,7 @@ namespace MyConfigSaver {
 
         YAML::Emitter emitter;
 
-        emitter << YAML::Comment("AimStar Config File\nVersion: 3.8\nAuthor: " + author);
+        emitter << YAML::Comment("AimStar Config File\nVersion: 4.0\nAuthor: " + author);
         emitter << YAML::BeginMap;
 
         emitter << YAML::Key << "ESP";
@@ -48,6 +48,7 @@ namespace MyConfigSaver {
         emitter << YAML::Key << "OutLine" << YAML::Value << ESPConfig::OutLine;
         emitter << YAML::Key << "HeadBoxStyle" << YAML::Value << ESPConfig::HeadBoxStyle;
         emitter << YAML::Key << "BoxRounding" << YAML::Value << ESPConfig::BoxRounding;
+        emitter << YAML::Key << "ShowScoped" << YAML::Value << ESPConfig::ShowIsScoped;
         emitter << YAML::Key << "BoneColor";
         emitter << YAML::Value;
         emitter << YAML::BeginMap;
@@ -208,7 +209,6 @@ namespace MyConfigSaver {
         emitter << YAML::Key << "Fov" << YAML::Value << MiscCFG::Fov;
         emitter << YAML::Key << "NoFlash" << YAML::Value << MiscCFG::NoFlash;
         emitter << YAML::Key << "Watermark" << YAML::Value << MiscCFG::WaterMark;
-        emitter << YAML::Key << "CheatList" << YAML::Value << MiscCFG::CheatList;
         emitter << YAML::Key << "HitSound" << YAML::Value << MiscCFG::HitSound;
         emitter << YAML::Key << "BombTimer" << YAML::Value << MiscCFG::bmbTimer;
         emitter << YAML::Key << "TimerColor";
@@ -229,9 +229,18 @@ namespace MyConfigSaver {
         emitter << YAML::Key << "Enable" << YAML::Value << MiscCFG::MoneyService;
         emitter << YAML::Key << "ShowCashSpent" << YAML::Value << MiscCFG::ShowCashSpent;
         emitter << YAML::EndMap;
+        emitter << YAML::Key << "NoSmoke" << YAML::Value << MiscCFG::NoSmoke;
         emitter << YAML::Key << "TeamCheck" << YAML::Value << MenuConfig::TeamCheck;
         emitter << YAML::Key << "AntiRecord" << YAML::Value << MenuConfig::BypassOBS;
         emitter << YAML::Key << "Jitter" << YAML::Value << MiscCFG::Jitter;
+        emitter << YAML::Key << "SmokeColor";
+        emitter << YAML::Value;
+        emitter << YAML::BeginMap;
+        emitter << YAML::Key << "Enable" << YAML::Value << MiscCFG::SmokeColored;
+        emitter << YAML::Key << "r" << YAML::Value << MiscCFG::SmokeColor.Value.x;
+        emitter << YAML::Key << "g" << YAML::Value << MiscCFG::SmokeColor.Value.y;
+        emitter << YAML::Key << "b" << YAML::Value << MiscCFG::SmokeColor.Value.z;
+        emitter << YAML::EndMap;
         emitter << YAML::EndMap;
 
         emitter << YAML::Key << "Aimbot";
@@ -254,6 +263,8 @@ namespace MyConfigSaver {
         emitter << YAML::Key << "Smooth" << YAML::Value << AimControl::Smooth;
         emitter << YAML::Key << "AimPos" << YAML::Value << MenuConfig::AimPosition;
         emitter << YAML::Key << "VisibleCheck" << YAML::Value << MenuConfig::VisibleCheck;
+        emitter << YAML::Key << "ScopeOnly" << YAML::Value << AimControl::ScopeOnly;
+        emitter << YAML::Key << "AutoShot" << YAML::Value << AimControl::AutoShot;
         emitter << YAML::EndMap;
 
         emitter << YAML::Key << "Triggerbot";
@@ -284,7 +295,7 @@ namespace MyConfigSaver {
     void LoadConfig(const std::string& filename) {
         YAML::Node config = YAML::LoadFile(MenuConfig::path + '\\' + filename);
         if (config["ESP"]) {
-            // If you want to make the new version compatible with the old configuration, you can add IsDefine(), like line 284.
+            // If you want to make the new version compatible with the old configuration, you can use "<Config>.IsDefine() ? <Config>.as() : <Default Value>"
             ESPConfig::ESPenabled = config["ESP"]["Enable"].as<bool>();
             ESPConfig::ShowBoneESP = config["ESP"]["BoneESP"].as<bool>();
             ESPConfig::ShowBoxESP = config["ESP"]["BoxESP"].as<bool>();
@@ -293,6 +304,7 @@ namespace MyConfigSaver {
             ESPConfig::LinePos = config["ESP"]["LinePos"].as<int>();
             ESPConfig::ShowHealthBar = config["ESP"]["HealthBar"].as<bool>();
             ESPConfig::AmmoBar = config["ESP"]["AmmoBar"].IsDefined() ? config["ESP"]["AmmoBar"].as<bool>() : false;
+            ESPConfig::ShowScoping = config["ESP"]["Scoping"].IsDefined() ? config["ESP"]["Scoping"].as<bool>() : false;
             ESPConfig::ShowWeaponESP = config["ESP"]["WeaponESP"].as<bool>();
             ESPConfig::ShowEyeRay = config["ESP"]["EyeRay"].as<bool>();
             ESPConfig::ShowPlayerName = config["ESP"]["PlayerName"].as<bool>();
@@ -306,6 +318,7 @@ namespace MyConfigSaver {
             ESPConfig::MultiColor = config["ESP"]["MultiColor"].as<bool>();
             ESPConfig::OutLine = config["ESP"]["OutLine"].as<bool>();
             ESPConfig::BoxRounding = config["ESP"]["BoxRounding"].as<float>();
+            ESPConfig::ShowIsScoped = config["ESP"]["ShowScoped"].as<bool>();
             ESPConfig::BoneColor.Value.x = config["ESP"]["BoneColor"]["r"].as<float>();
             ESPConfig::BoneColor.Value.y = config["ESP"]["BoneColor"]["g"].as<float>();
             ESPConfig::BoneColor.Value.z = config["ESP"]["BoneColor"]["b"].as<float>();
@@ -400,10 +413,9 @@ namespace MyConfigSaver {
             MenuConfig::HeadShootLineColor.Value.z = config["Misc"]["HeadShootLineColor"]["b"].as<float>();
             MenuConfig::HeadShootLineColor.Value.w = config["Misc"]["HeadShootLineColor"]["a"].as<float>();
             MiscCFG::WorkInSpec = config["Misc"]["WorkInSpec"].as<bool>();
-            MiscCFG::Fov = config["Misc"]["Fov"].IsDefined() ? config["Misc"]["Fov"].as<float>() : 0.0f;
+            MiscCFG::FovHacker = config["Misc"]["Fov"].IsDefined() ? config["Misc"]["Fov"].as<int>() : 90;
             MiscCFG::NoFlash = config["Misc"]["NoFlash"].as<bool>();
             MiscCFG::WaterMark = config["Misc"]["Watermark"].as<bool>();
-            MiscCFG::CheatList = config["Misc"]["CheatList"].as<bool>();
             MiscCFG::HitSound = config["Misc"]["HitSound"].as<bool>();
             MiscCFG::bmbTimer = config["Misc"]["BombTimer"].as<bool>();
             MiscCFG::BombTimerCol.Value.x = config["Misc"]["TimerColor"]["r"].as<float>();
@@ -416,9 +428,14 @@ namespace MyConfigSaver {
             MiscCFG::RadarHack = config["Misc"]["RadarHack"].IsDefined() ? config["Misc"]["RadarHack"].as<bool>() : false;
             MiscCFG::MoneyService = config["Misc"]["MoneyService"]["Enable"].IsDefined() ? config["Misc"]["MoneyService"]["Enable"].as<bool>() : false;
             MiscCFG::ShowCashSpent = config["Misc"]["MoneyService"]["ShowCashSpent"].IsDefined() ? config["Misc"]["MoneyService"]["ShowCashSpent"].as<bool>() : false;
+            MiscCFG::NoSmoke = config["Misc"]["NoSmoke"].IsDefined() ? config["Misc"]["NoSmoke"].as<bool>() : false;
             MenuConfig::TeamCheck = config["Misc"]["TeamCheck"].as<bool>();
             MenuConfig::BypassOBS = config["Misc"]["AntiRecord"].as<bool>();
-            MiscCFG::Jitter = config["Misc"]["Jitter"].IsDefined() ? config["Misc"]["Jitter"].as<bool>() : false;;
+            MiscCFG::Jitter = config["Misc"]["Jitter"].IsDefined() ? config["Misc"]["Jitter"].as<bool>() : false;
+            MiscCFG::SmokeColored = config["Misc"]["SmokeColor"]["Enable"].IsDefined() ? config["Misc"]["SmokeColor"]["Enable"].as<bool>() : false;
+            MiscCFG::SmokeColor.Value.x = config["Misc"]["SmokeColor"]["r"].IsDefined() ? config["Misc"]["SmokeColor"]["r"].as<float>() : 255.f;
+            MiscCFG::SmokeColor.Value.y = config["Misc"]["SmokeColor"]["g"].IsDefined() ? config["Misc"]["SmokeColor"]["g"].as<float>() : 0.f;
+            MiscCFG::SmokeColor.Value.z = config["Misc"]["SmokeColor"]["b"].IsDefined() ? config["Misc"]["SmokeColor"]["b"].as<float>() : 0.f;
         }
         if (config["Aimbot"])
         {
@@ -435,6 +452,8 @@ namespace MyConfigSaver {
             AimControl::Smooth = config["Aimbot"]["Smooth"].as<float>();
             MenuConfig::AimPosition = config["Aimbot"]["AimPos"].as<int>();
             MenuConfig::VisibleCheck = config["Aimbot"]["VisibleCheck"].as<bool>();
+            AimControl::ScopeOnly = config["Aimbot"]["ScopeOnly"].IsDefined() ? config["Aimbot"]["ScopeOnly"].as<bool>() : false;
+            AimControl::AutoShot = config["Aimbot"]["AutoShot"].IsDefined() ? config["Aimbot"]["AutoShot"].as<bool>() : false;
         }
         if (config["Triggerbot"])
         {

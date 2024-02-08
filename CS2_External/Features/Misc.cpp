@@ -28,37 +28,6 @@ namespace Misc
 		MiscCFG::fucker = !MiscCFG::fucker;
 	}
 
-	void CheatList() noexcept
-	{
-		if (!MiscCFG::CheatList)
-			return;
-
-		ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse;
-		ImGui::SetNextWindowBgAlpha(0.3f);
-		ImGui::SetNextWindowSize(ImVec2(200, 0));
-		ImGui::Begin("Cheats List", nullptr, windowFlags);
-
-		CheatText("ESP", ESPConfig::ESPenabled);
-		if (MenuConfig::AimBot && (MenuConfig::AimAlways || GetAsyncKeyState(AimControl::HotKey)))
-			ImGui::Text("Aimbot [Toggle]");
-		CheatText("RCS", MenuConfig::RCS);
-		CheatText("Glow", MiscCFG::EnemySensor);
-		CheatText("Radar", RadarCFG::ShowRadar);
-		if (MenuConfig::TriggerBot && (MenuConfig::TriggerAlways || GetAsyncKeyState(MenuConfig::TriggerHotKey)))
-			ImGui::Text("TriggerBot [Toggle]");
-
-		CheatText("Crosshair", CrosshairsCFG::ShowCrossHair);
-		CheatText("Headshot Line", MenuConfig::ShowHeadShootLine);
-		CheatText("No Flash", MiscCFG::NoFlash);
-		CheatText("Fast Stop", MiscCFG::FastStop);
-		CheatText("Bhop", MiscCFG::BunnyHop);
-		CheatText("HitSound", MiscCFG::HitSound);
-		CheatText("Bomb Timer", MiscCFG::bmbTimer);
-		CheatText("Spec List", MiscCFG::SpecList);
-
-		ImGui::End();
-	}
-
 	void Watermark() noexcept
 	{
 		if (!MiscCFG::WaterMark)
@@ -134,30 +103,89 @@ namespace Misc
 		Misc::StopKeyEvent('S', &sKeyPressed, 'W', 50.f);
 	}
 
+	void NadeManager(CGame Game) noexcept
+	{
+		std::vector<std::string> EntityNames = {
+		"smokegrenade_projectile", "weapon_glock", "weapon_smokegrenade", "basemodelentity",
+		"c_cs_player_for_precache", "info_particle_system", "prop_dynamic", "post_processing_volume",
+		"env_player_visibility", "team_intro_terrorist", "c_cs_observer_for_precache",
+		"team_intro_counterterrorist", "point_camera", "sky_camera", "env_sky", "team_select_terrorist",
+		"team_select_counterterrorist", "point_camera", "func_bomb_target", "env_cubemap_fog",
+		"csgo_viewmodel", "cs_minimap_boundary", "cs_gamerules", "cs_player_manager", "vote_controller",
+		"weapon_incgrenade", "molotov_projectile"
+		};
+
+		if (!MiscCFG::NoSmoke && !MiscCFG::SmokeColored)
+			return;
+
+		for (int i_smoke = 64; i_smoke < 1024; i_smoke++) {
+			uintptr_t SmokeEntity = GetSmokeEntity(i_smoke, Game.GetEntityListEntry());
+
+			uintptr_t ent_base, addr;
+			ProcessMgr.ReadMemory<uintptr_t>(SmokeEntity, ent_base);
+
+			// No Smoke
+			if (MiscCFG::NoSmoke)
+			{
+				bool begin = false;
+				int uf = 0;
+
+				ProcessMgr.WriteMemory<bool>(ent_base + Offset::SmokeGrenadeProjectile.bDidSmokeEffect, begin);
+				ProcessMgr.WriteMemory<bool>(ent_base + Offset::SmokeGrenadeProjectile.bSmokeEffectSpawned, begin);
+				ProcessMgr.WriteMemory<int>(ent_base + Offset::SmokeGrenadeProjectile.nSmokeEffectTickBegin, uf);
+			}
+
+			// Smoke Color
+			if (MiscCFG::SmokeColored || MiscCFG::FireColored)
+			{
+				char toread[32];
+				std::string classname;
+				Vector3 COLOR = { MiscCFG::SmokeColor.Value.x, MiscCFG::SmokeColor.Value.y ,MiscCFG::SmokeColor.Value.z };
+				ProcessMgr.ReadMemory<uintptr_t>(ent_base + 0x10, addr);
+				ProcessMgr.ReadMemory<uintptr_t>(addr + 0x20, addr);
+				ProcessMgr.ReadMemory<char[32]>(addr, toread);
+				classname = toread;
+
+				/* 
+				* Filter id to find id
+				if (std::find(EntityNames.begin(), EntityNames.end(), classname) == EntityNames.end())
+					std::cout << classname << std::endl;
+				*/
+
+				if (classname == "smokegrenade_projectile")
+				{
+					if (MiscCFG::SmokeColored)
+						ProcessMgr.WriteMemory<Vector3>(ent_base + Offset::SmokeGrenadeProjectile.vSmokeColor, COLOR);
+				}
+				/* Disabled
+				if (classname == "molotov_projectile")
+				{
+					Vector3 FireColor = { 0,0,0 };
+					ProcessMgr.ReadMemory<Vector3>(ent_base + 0x112C, FireColor);
+					std::cout << FireColor.x << ", " << FireColor.y << ", " << FireColor.z << std::endl;
+						
+				}*/
+			}
+		}
+	}
+
 	void RadarHack(const CEntity& EntityList) noexcept
 	{
 		if (!MiscCFG::RadarHack)
 			return;
 
-		bool SpottedStatus = 1;
+		bool SpottedStatus = true;
 		ProcessMgr.WriteMemory(EntityList.Pawn.Address + Offset::Pawn.bSpottedByMask, SpottedStatus);
 	}
 
 	void FovChanger(const CEntity& aLocalPlayer) noexcept
 	{
 		DWORD64 CameraServices = 0;
-		UINT CurrentFOV;
-		bool isScoped;
 		if (!ProcessMgr.ReadMemory<DWORD64>(aLocalPlayer.Pawn.Address + Offset::Pawn.CameraServices, CameraServices))
 			return;
 
-		float Dfov = MiscCFG::Fov;
-		// ProcessMgr.ReadMemory(CameraServices + Offset::Pawn.iFov, CurrentFOV);
-		ProcessMgr.ReadMemory(aLocalPlayer.Pawn.Address + Offset::Pawn.isScoped, isScoped);
-		if (!isScoped)
-		{
-			ProcessMgr.WriteMemory<float>(CameraServices + Offset::Pawn.iFov, Dfov);
-		}
+		UINT Desiredfov = static_cast<UINT>(MiscCFG::Fov);
+		ProcessMgr.WriteMemory<UINT>(aLocalPlayer.Controller.Address + Offset::Pawn.DesiredFov, Desiredfov);
 	}
 
 	void MoneyService(const CEntity& EntityList) noexcept
@@ -165,7 +193,7 @@ namespace Misc
 		if (!MiscCFG::MoneyService)
 			return;
 
-		ImGuiWindowFlags flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize;
+		ImGuiWindowFlags flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize;
 
 		ImGui::Begin("Money Services", nullptr, flags);
 		{
@@ -186,10 +214,11 @@ namespace Misc
 		}
 	}
 
-	void Jitter(const CEntity& aLocalPlayer) noexcept
+	void FakeDuck(const CEntity& aLocalPlayer) noexcept
 	{
 
 		DWORD64 MovementServices;
+		float Tick;
 		bool Ducking = 1, unDuck = 0;
 		ProcessMgr.ReadMemory(aLocalPlayer.Pawn.Address + Offset::Pawn.MovementServices, MovementServices);
 		if (!MiscCFG::Jitter)
@@ -201,37 +230,33 @@ namespace Misc
 		}
 	}
 
-	void EdgeJump(const CEntity& aLocalPlayer) noexcept
+	void BunnyHop(const CEntity& Local) noexcept
 	{
-		// Unfinished
-		float Gravity;
-		ProcessMgr.ReadMemory(aLocalPlayer.Pawn.Address + Offset::Entity.GravityScale, Gravity);
-		std::cout << Gravity << std::endl;
-	}
+		if (!MiscCFG::BunnyHop)
+			return;
 
-	void NoSmoke(const DWORD64 EntityAddress) noexcept
-	{
-		uintptr_t entbase;
-		bool SmokeStatus = false;
-		int SmokeTime;
-		ProcessMgr.ReadMemory(EntityAddress, entbase);
-		ProcessMgr.WriteMemory<bool>(entbase + Offset::SmokeGrenadeProjectile.bDidSmokeEffect, SmokeStatus);
-	}
+		int ForceJump;
+		bool spacePressed = GetAsyncKeyState(VK_SPACE);
+		bool isInAir = AirCheck(Local);
+		gGame.GetForceJump(ForceJump);
 
-	void SmokeColor(const DWORD64 EntityAddress) noexcept
-	{
-		uintptr_t entbase, adrr;
-		char toread[32];
-		std::string classname;
-		ProcessMgr.ReadMemory<uintptr_t>((uintptr_t)EntityAddress, entbase);
-		ProcessMgr.ReadMemory<uintptr_t>(entbase + 0x10, adrr);
-		ProcessMgr.ReadMemory<uintptr_t>(adrr + 0x20, adrr);
-		ProcessMgr.ReadMemory<char[32]>(adrr, toread);
-		classname = toread;
-		if (classname == "smokegrenade_projectile")
+		if (spacePressed && isInAir) // AirCheck = 1, is on ground
 		{
-			Vector3 RED_COLOR = { 1.f, 0.f, 0.f };
-			ProcessMgr.WriteMemory<Vector3>(entbase + Offset::SmokeGrenadeProjectile.vSmokeColor, RED_COLOR);
+			// As of the latest update (11/8/2023) bhop doesn't work at all with sendinput,
+			// if +jump is sent on the same tick that you land on the ground, the jump won't register.
+			// But you can add 15ms of delay right before your sendinput to fix this problem temporarily
+			std::this_thread::sleep_for(std::chrono::milliseconds(15));
+			// Refer to -> https://www.unknowncheats.me/forum/counter-strike-2-a/609480-sendinput-bhop-inconsistency.html
+			gGame.SetForceJump(65537);
+		}
+
+		else if (spacePressed && !isInAir) // AirCheck = 0, isn't on ground
+		{
+			gGame.SetForceJump(256);
+		}
+		else if (!spacePressed && ForceJump == 65537)
+		{
+			gGame.SetForceJump(256);
 		}
 	}
 }

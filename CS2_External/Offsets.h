@@ -52,7 +52,7 @@ namespace Offset
 		DWORD angEyeAngles = 0x1578;
 		DWORD vecLastClipCameraPos = 0x12EC;
 		DWORD iShotsFired = 0x147C;
-		DWORD flFlashDuration = 0x14CC;
+		DWORD flFlashMaxAlpha = 0x14C8;
 		DWORD aimPunchAngle = 0x177C;			// C_CSPlayerPawn::m_aimPunchAngle
 		DWORD aimPunchCache = 0x17A0;
 		DWORD iIDEntIndex = 0x15A4;
@@ -60,7 +60,7 @@ namespace Offset
 		DWORD DesiredFov = 0x6CC;
 		DWORD iFovStart = 0x214;
 		DWORD fFlags = 0x3D4;
-		DWORD bSpottedByMask = 0x16A4;			// C_CSPlayerPawnBase::entitySpottedState + EntitySpottedState_t::bSpottedByMask
+		DWORD bSpottedByMask = 0x1698 + 0xC;			// C_CSPlayerPawnBase::entitySpottedState + EntitySpottedState_t::bSpottedByMask
 	} Pawn;
 
 	struct
@@ -84,6 +84,8 @@ namespace Offset
 		DWORD m_pObserverServices = 0x1118;
 		DWORD m_hObserverTarget = 0x44;
 		DWORD m_hController = 0x1294;
+		DWORD PawnArmor = 0x7F4;
+		DWORD HasHelmet = 0x7F9;
 	} PlayerController;
 
 	struct

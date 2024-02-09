@@ -42,6 +42,8 @@ namespace Lang
 		inline static const char* HealthNum;
 		inline static const char* Ammo;
 		inline static const char* ScopedESP;
+		inline static const char* ShowArmorBar;
+		inline static const char* ArmorNum;
 
 		inline static const char* BoxType_Normal;
 		inline static const char* BoxType_Edge;
@@ -150,6 +152,8 @@ namespace Lang
 		inline static const char* NoSmoke;
 		inline static const char* SmokeColor;
 		inline static const char* fovchanger;
+		inline static const char* ForceScope;
+		inline static const char* FlashImmunity;
 		
 		inline static const char* FakeDuck;
 
@@ -221,6 +225,8 @@ namespace Lang
 		ESPtext.HealthNum = u8"Health Number";
 		ESPtext.Ammo = u8"Ammo";
 		ESPtext.ScopedESP = u8"Show Scoped";
+		ESPtext.ShowArmorBar = u8"Armor Bar";
+		ESPtext.ArmorNum = u8"Armor Number";
 
 		ESPtext.BoxType_Normal = u8"Normal";
 		ESPtext.BoxType_Edge = u8"Dynamic";
@@ -308,6 +314,8 @@ namespace Lang
 		MiscText.NoSmoke = u8"No Smoke";
 		MiscText.SmokeColor = u8"Smoke Color";
 		MiscText.fovchanger = u8"Fov Changer: ";
+		MiscText.ForceScope = u8"Force Scope";
+		MiscText.FlashImmunity = u8"Flash Immunity: ";
 
 		MiscText.FakeDuck = u8"Fake Duck";
 

@@ -49,6 +49,8 @@ namespace MyConfigSaver {
         emitter << YAML::Key << "HeadBoxStyle" << YAML::Value << ESPConfig::HeadBoxStyle;
         emitter << YAML::Key << "BoxRounding" << YAML::Value << ESPConfig::BoxRounding;
         emitter << YAML::Key << "ShowScoped" << YAML::Value << ESPConfig::ShowIsScoped;
+        emitter << YAML::Key << "ArmorBar" << YAML::Value << ESPConfig::ArmorBar;
+        emitter << YAML::Key << "ArmorNum" << YAML::Value << ESPConfig::ShowArmorNum;
         emitter << YAML::Key << "BoneColor";
         emitter << YAML::Value;
         emitter << YAML::BeginMap;
@@ -207,7 +209,8 @@ namespace MyConfigSaver {
         emitter << YAML::EndMap;
         emitter << YAML::Key << "WorkInSpec" << YAML::Value << MiscCFG::WorkInSpec;
         emitter << YAML::Key << "Fov" << YAML::Value << MiscCFG::Fov;
-        emitter << YAML::Key << "NoFlash" << YAML::Value << MiscCFG::NoFlash;
+        emitter << YAML::Key << "FlashImmunity" << YAML::Value << MiscCFG::FlashImmunity;
+        emitter << YAML::Key << "CheatList" << YAML::Value << MiscCFG::CheatList;
         emitter << YAML::Key << "Watermark" << YAML::Value << MiscCFG::WaterMark;
         emitter << YAML::Key << "HitSound" << YAML::Value << MiscCFG::HitSound;
         emitter << YAML::Key << "BombTimer" << YAML::Value << MiscCFG::bmbTimer;
@@ -318,7 +321,9 @@ namespace MyConfigSaver {
             ESPConfig::MultiColor = config["ESP"]["MultiColor"].as<bool>();
             ESPConfig::OutLine = config["ESP"]["OutLine"].as<bool>();
             ESPConfig::BoxRounding = config["ESP"]["BoxRounding"].as<float>();
-            ESPConfig::ShowIsScoped = config["ESP"]["ShowScoped"].as<bool>();
+            ESPConfig::ShowIsScoped = config["ESP"]["ShowScoped"].IsDefined() ? config["ESP"]["ShowScoped"].as<bool>() : false;
+            ESPConfig::ArmorBar = config["ESP"]["ArmorBar"].IsDefined() ? config["ESP"]["ArmorBar"].as<bool>() : false;
+            ESPConfig::ShowArmorNum = config["ESP"]["ArmorNum"].IsDefined() ? config["ESP"]["ArmorNum"].as<bool>() : false;
             ESPConfig::BoneColor.Value.x = config["ESP"]["BoneColor"]["r"].as<float>();
             ESPConfig::BoneColor.Value.y = config["ESP"]["BoneColor"]["g"].as<float>();
             ESPConfig::BoneColor.Value.z = config["ESP"]["BoneColor"]["b"].as<float>();
@@ -414,7 +419,8 @@ namespace MyConfigSaver {
             MenuConfig::HeadShootLineColor.Value.w = config["Misc"]["HeadShootLineColor"]["a"].as<float>();
             MiscCFG::WorkInSpec = config["Misc"]["WorkInSpec"].as<bool>();
             MiscCFG::FovHacker = config["Misc"]["Fov"].IsDefined() ? config["Misc"]["Fov"].as<int>() : 90;
-            MiscCFG::NoFlash = config["Misc"]["NoFlash"].as<bool>();
+            MiscCFG::FlashImmunity = config["Misc"]["FlashImmunity"].IsDefined() ? config["Misc"]["FlashImmunity"].as<float>() : 0.f;
+            MiscCFG::CheatList = config["Misc"]["CheatList"].IsDefined() ? config["Misc"]["CheatList"].as<bool>() : false;
             MiscCFG::WaterMark = config["Misc"]["Watermark"].as<bool>();
             MiscCFG::HitSound = config["Misc"]["HitSound"].as<bool>();
             MiscCFG::bmbTimer = config["Misc"]["BombTimer"].as<bool>();

@@ -90,6 +90,8 @@ namespace ESPConfig
 	inline bool DrawFov = false;
 	inline bool ShowDistance = false;
 	inline bool ShowHealthNum = false;
+	inline bool ArmorBar = false;
+	inline bool ShowArmorNum = false;
 	inline bool ShowHeadBox = false;
 	inline bool ShowPreview = true;
 	inline bool VisibleCheck = false;
@@ -177,7 +179,6 @@ namespace MiscCFG
 
 	inline bool BunnyHop = false;
 	inline bool WorkInSpec = true;
-	inline bool NoFlash = false;
 	inline bool WaterMark = false;
 	inline bool HitSound = false;
 	inline bool SkinChanger = false;
@@ -192,7 +193,10 @@ namespace MiscCFG
 	inline bool SmokeColored = false;
 	inline bool FireColored = false;
 	inline bool FovHacker = false;
+	inline bool CheatList = false;
+	inline bool ForceScope = false;
 	inline int Fov = 90;
+	inline float FlashImmunity = 0;
 	inline ImColor BombTimerCol = ImColor(255, 120, 0, 255);
 	inline ImColor SmokeColor = ImColor(255, 0, 0, 255);
 	inline ImColor FireColor = ImColor(0, 255, 0, 255);

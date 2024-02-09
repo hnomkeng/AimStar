@@ -21,6 +21,8 @@
 
 namespace Misc
 {
+	inline bool Zoom;
+
 	static inline std::vector<ImColor> colorList = {
 		ImColor(255, 0, 0),     // Red
 		ImColor(255, 165, 0),   // Orange
@@ -94,7 +96,7 @@ namespace Misc
 
 	void Watermark() noexcept;
 	void HitSound(const CEntity& aLocalPlayer, int& PreviousTotalHits) noexcept;
-	void NoFlash(const CEntity& aLocalPlayer) noexcept;
+	void FlashImmunity(const CEntity& aLocalPlayer) noexcept;
 	void FastStop() noexcept;
 	void NadeManager(CGame Game) noexcept;
 	void RadarHack(const CEntity& EntityList) noexcept;
@@ -102,6 +104,8 @@ namespace Misc
 	void MoneyService(const CEntity& EntityList) noexcept;
 	void FakeDuck(const CEntity& EntityList) noexcept;
 	void BunnyHop(const CEntity& Local) noexcept;
+	void CheatList() noexcept;
+	void ForceScope(const CEntity& aLocalPlayer) noexcept;
 
 	void JoinDiscord() noexcept;
 	void SourceCode() noexcept;

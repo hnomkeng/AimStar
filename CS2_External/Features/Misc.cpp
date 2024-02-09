@@ -28,6 +28,45 @@ namespace Misc
 		MiscCFG::fucker = !MiscCFG::fucker;
 	}
 
+	void CheatList() noexcept
+	{
+		if (!MiscCFG::CheatList)
+			return;
+
+		ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse;
+		ImGui::SetNextWindowBgAlpha(0.3f);
+		ImGui::SetNextWindowSize(ImVec2(200, 0));
+		ImGui::Begin("Cheats List", nullptr, windowFlags);
+
+		if (MenuConfig::AimBot && (MenuConfig::AimAlways || GetAsyncKeyState(AimControl::HotKey)))
+			ImGui::Text("Aimbot [Toggle]");
+		CheatText("Anti Record", MenuConfig::BypassOBS);
+		CheatText("Bhop", MiscCFG::BunnyHop);
+		CheatText("Bomb Timer", MiscCFG::bmbTimer);
+		CheatText("Crosshair", CrosshairsCFG::ShowCrossHair);
+		CheatText("Enemy Sensor", MiscCFG::EnemySensor);
+		CheatText("ESP", ESPConfig::ESPenabled);
+		CheatText("External Radar", RadarCFG::ShowRadar);
+		CheatText("Fake Duck", MiscCFG::Jitter);
+		CheatText("Fast Stop", MiscCFG::FastStop);
+		if (MiscCFG::FlashImmunity != 0)
+			ImGui::Text("Flash Immunity");
+		if (MiscCFG::Fov != 90)
+			ImGui::Text("Fov Changer");
+		CheatText("Headshot Line", MenuConfig::ShowHeadShootLine);
+		CheatText("HitSound", MiscCFG::HitSound);
+		CheatText("Money Service", MiscCFG::MoneyService);
+		CheatText("No Smoke", MiscCFG::NoSmoke);
+		CheatText("Radar Hack", MiscCFG::RadarHack);
+		CheatText("RCS", MenuConfig::RCS);
+		CheatText("Smoke Color", MiscCFG::SmokeColored);
+		CheatText("Spec List", MiscCFG::SpecList);
+		if (MenuConfig::TriggerBot && (MenuConfig::TriggerAlways || GetAsyncKeyState(MenuConfig::TriggerHotKey)))
+			ImGui::Text("TriggerBot [Toggle]");
+
+		ImGui::End();
+	}
+
 	void Watermark() noexcept
 	{
 		if (!MiscCFG::WaterMark)
@@ -77,13 +116,10 @@ namespace Misc
 		PreviousTotalHits = totalHits;
 	}
 
-	void NoFlash(const CEntity& aLocalPlayer) noexcept
+	void FlashImmunity(const CEntity& aLocalPlayer) noexcept
 	{
-		if (!MiscCFG::NoFlash)
-			return;
-
-		float duration = 0.0f;
-		ProcessMgr.WriteMemory(aLocalPlayer.Pawn.Address + Offset::Pawn.flFlashDuration, duration);
+		float MaxAlpha = 255.f - MiscCFG::FlashImmunity;
+		ProcessMgr.WriteMemory(aLocalPlayer.Pawn.Address + Offset::Pawn.flFlashMaxAlpha, MaxAlpha);
 	}
 
 	void FastStop() noexcept
@@ -181,11 +217,15 @@ namespace Misc
 	void FovChanger(const CEntity& aLocalPlayer) noexcept
 	{
 		DWORD64 CameraServices = 0;
+		if (Zoom)
+			return;
+
 		if (!ProcessMgr.ReadMemory<DWORD64>(aLocalPlayer.Pawn.Address + Offset::Pawn.CameraServices, CameraServices))
 			return;
 
 		UINT Desiredfov = static_cast<UINT>(MiscCFG::Fov);
 		ProcessMgr.WriteMemory<UINT>(aLocalPlayer.Controller.Address + Offset::Pawn.DesiredFov, Desiredfov);
+
 	}
 
 	void MoneyService(const CEntity& EntityList) noexcept
@@ -208,7 +248,7 @@ namespace Misc
 					sss << "ThisRound/Total: " << EntityList.Controller.CashSpent << "/" << EntityList.Controller.CashSpentTotal;
 					ImGui::TextColored(ImColor(255, 0, 0, 255), sss.str().c_str());
 				}
-				
+
 				ImGui::TreePop();
 			}
 		}
@@ -257,6 +297,22 @@ namespace Misc
 		else if (!spacePressed && ForceJump == 65537)
 		{
 			gGame.SetForceJump(256);
+		}
+	}
+
+	void ForceScope(const CEntity& aLocalPlayer) noexcept
+	{
+		if (!MiscCFG::ForceScope)
+			return;
+
+		if (GetAsyncKeyState(VK_RBUTTON) & 0x8000)
+		{
+			Zoom = true;
+			UINT Scopefov = 45;
+			ProcessMgr.WriteMemory<UINT>(aLocalPlayer.Controller.Address + Offset::Pawn.DesiredFov, Scopefov);
+		}
+		else {
+			Zoom = false;
 		}
 	}
 }

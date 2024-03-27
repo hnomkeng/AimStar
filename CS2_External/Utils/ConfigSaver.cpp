@@ -7,7 +7,7 @@
 #include "../Resources/Language.h"
 #include "../MenuConfig.hpp"
 #include "../TriggerBot.h"
-#include "../AimBot.hpp"
+#include "../Features/Aimbot/Legitbot.hpp"
 
 namespace MyConfigSaver {
 
@@ -20,7 +20,7 @@ namespace MyConfigSaver {
 
         YAML::Emitter emitter;
 
-        emitter << YAML::Comment("AimStar Config File\nVersion: 4.0\nAuthor: " + author);
+        emitter << YAML::Comment("AimStar Config File\nVersion: 4.3\nAuthor: " + author);
         emitter << YAML::BeginMap;
 
         emitter << YAML::Key << "ESP";
@@ -51,6 +51,7 @@ namespace MyConfigSaver {
         emitter << YAML::Key << "ShowScoped" << YAML::Value << ESPConfig::ShowIsScoped;
         emitter << YAML::Key << "ArmorBar" << YAML::Value << ESPConfig::ArmorBar;
         emitter << YAML::Key << "ArmorNum" << YAML::Value << ESPConfig::ShowArmorNum;
+        emitter << YAML::Key << "MaxRenderDistance" << YAML::Value << ESPConfig::RenderDistance;
         emitter << YAML::Key << "BoneColor";
         emitter << YAML::Value;
         emitter << YAML::BeginMap;
@@ -155,6 +156,7 @@ namespace MyConfigSaver {
         emitter << YAML::Key << "Thickness" << YAML::Value << CrosshairsCFG::Thickness;
         emitter << YAML::Key << "DotSize" << YAML::Value << CrosshairsCFG::DotSize;
         emitter << YAML::Key << "CircleRadius" << YAML::Value << CrosshairsCFG::CircleRadius;
+        emitter << YAML::Key << "TargetCheck" << YAML::Value << MenuConfig::TargetingCrosshairs;
         emitter << YAML::Key << "CrosshairsColor";
         emitter << YAML::Value;
         emitter << YAML::BeginMap;
@@ -212,7 +214,7 @@ namespace MyConfigSaver {
         emitter << YAML::Key << "FlashImmunity" << YAML::Value << MiscCFG::FlashImmunity;
         emitter << YAML::Key << "CheatList" << YAML::Value << MiscCFG::CheatList;
         emitter << YAML::Key << "Watermark" << YAML::Value << MiscCFG::WaterMark;
-        emitter << YAML::Key << "HitSound" << YAML::Value << MiscCFG::HitSound;
+        emitter << YAML::Key << "HitSounds" << YAML::Value << MiscCFG::HitSound;
         emitter << YAML::Key << "BombTimer" << YAML::Value << MiscCFG::bmbTimer;
         emitter << YAML::Key << "TimerColor";
         emitter << YAML::Value;
@@ -233,6 +235,8 @@ namespace MyConfigSaver {
         emitter << YAML::Key << "ShowCashSpent" << YAML::Value << MiscCFG::ShowCashSpent;
         emitter << YAML::EndMap;
         emitter << YAML::Key << "NoSmoke" << YAML::Value << MiscCFG::NoSmoke;
+        emitter << YAML::Key << "NightMode" << YAML::Value << MiscCFG::NightMode;
+        emitter << YAML::Key << "NightModeAlpha" << YAML::Value << MiscCFG::NightModeAlpha;
         emitter << YAML::Key << "TeamCheck" << YAML::Value << MenuConfig::TeamCheck;
         emitter << YAML::Key << "AntiRecord" << YAML::Value << MenuConfig::BypassOBS;
         emitter << YAML::Key << "Jitter" << YAML::Value << MiscCFG::Jitter;
@@ -250,10 +254,13 @@ namespace MyConfigSaver {
         emitter << YAML::Value;
         emitter << YAML::BeginMap;
         emitter << YAML::Key << "Enable" << YAML::Value << MenuConfig::AimBot;
-        emitter << YAML::Key << "AutoLock" << YAML::Value << MenuConfig::AimAlways;
+        emitter << YAML::Key << "Ragebot" << YAML::Value << AimControl::Rage;
+        emitter << YAML::Key << "AimLock" << YAML::Value << AimControl::AimLock;
         emitter << YAML::Key << "ToggleMode" << YAML::Value << MenuConfig::AimToggleMode;
-        emitter << YAML::Key << "Hotkey" << YAML::Value << MenuConfig::AimBotHotKey;
+        emitter << YAML::Key << "Hotkey" << YAML::Value << MenuConfig::AimBotHotKey; 
+        emitter << YAML::Key << "AimBullet" << YAML::Value << AimControl::AimBullet;
         emitter << YAML::Key << "Fov" << YAML::Value << AimControl::AimFov;
+        emitter << YAML::Key << "FovMin" << YAML::Value << AimControl::AimFovMin;
         emitter << YAML::Key << "FovCircle" << YAML::Value << ESPConfig::DrawFov;
         emitter << YAML::Key << "CircleColor";
         emitter << YAML::Value;
@@ -264,10 +271,19 @@ namespace MyConfigSaver {
         emitter << YAML::Key << "a" << YAML::Value << MenuConfig::FovCircleColor.Value.w;
         emitter << YAML::EndMap;
         emitter << YAML::Key << "Smooth" << YAML::Value << AimControl::Smooth;
-        emitter << YAML::Key << "AimPos" << YAML::Value << MenuConfig::AimPosition;
+        emitter << YAML::Key << "Hitboxes" << YAML::Value << AimControl::HitboxList;
         emitter << YAML::Key << "VisibleCheck" << YAML::Value << MenuConfig::VisibleCheck;
+        emitter << YAML::Key << "IgnoreFlash" << YAML::Value << AimControl::IgnoreFlash;
         emitter << YAML::Key << "ScopeOnly" << YAML::Value << AimControl::ScopeOnly;
         emitter << YAML::Key << "AutoShot" << YAML::Value << AimControl::AutoShot;
+        emitter << YAML::EndMap;
+
+        emitter << YAML::Key << "Recoil Control System";
+        emitter << YAML::Value;
+        emitter << YAML::BeginMap;
+        emitter << YAML::Key << "Enable" << YAML::Value << MenuConfig::RCS;
+        emitter << YAML::Key << "Yaw" << YAML::Value << RCS::RCSScale.x;
+        emitter << YAML::Key << "Pitch" << YAML::Value << RCS::RCSScale.y;
         emitter << YAML::EndMap;
 
         emitter << YAML::Key << "Triggerbot";
@@ -277,15 +293,62 @@ namespace MyConfigSaver {
         emitter << YAML::Key << "Hotkey" << YAML::Value << MenuConfig::TriggerHotKey;
         emitter << YAML::Key << "Delay" << YAML::Value << TriggerBot::TriggerDelay;
         emitter << YAML::Key << "FakeShot" << YAML::Value << TriggerBot::FakeShotDelay;
+        emitter << YAML::Key << "ScopeOnly" << YAML::Value << TriggerBot::ScopeOnly;
+        emitter << YAML::Key << "IgnoreFlash" << YAML::Value << TriggerBot::IgnoreFlash;
         emitter << YAML::Key << "AutoMode" << YAML::Value << MenuConfig::TriggerAlways;
         emitter << YAML::EndMap;
 
         emitter << YAML::Key << "Menu";
         emitter << YAML::Value;
         emitter << YAML::BeginMap;
+        emitter << YAML::Key << "SafeMode" << YAML::Value << MenuConfig::SafeMode;
+        emitter << YAML::Key << "RenderFrameLimit" << YAML::Value << MenuConfig::MaxRenderFPS;
         emitter << YAML::Key << "Theme" << YAML::Value << MenuConfig::Theme;
-        emitter << YAML::Key << "Language" << YAML::Value << MenuConfig::Language;
         emitter << YAML::EndMap;
+
+        // Custom Theme Saver
+        if (MenuConfig::Theme == 2)
+        {
+            ImColor windowBgColor = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+            ImColor borderColor = ImGui::GetStyleColorVec4(ImGuiCol_Border);
+            ImColor childBgColor = ImGui::GetStyleColorVec4(ImGuiCol_ChildBg);
+            ImColor ButtonColor = ImGui::GetStyleColorVec4(ImGuiCol_Button);
+            ImColor ButtonHovered = ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered);
+            ImColor ButtonActive = ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive);
+            ImColor FrameBgColor = ImGui::GetStyleColorVec4(ImGuiCol_FrameBg);
+            ImColor FrameHovered = ImGui::GetStyleColorVec4(ImGuiCol_FrameBgHovered);
+            ImColor FrameActive = ImGui::GetStyleColorVec4(ImGuiCol_FrameBgActive);
+            ImColor Header = ImGui::GetStyleColorVec4(ImGuiCol_Header);
+            ImColor HeaderActive = ImGui::GetStyleColorVec4(ImGuiCol_HeaderActive);
+            ImColor HeaderHovered = ImGui::GetStyleColorVec4(ImGuiCol_HeaderHovered);
+            ImColor ScrollBg = ImGui::GetStyleColorVec4(ImGuiCol_ScrollbarBg);
+
+            ImColor FeatureName = ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled);
+            ImColor Text = ImGui::GetStyleColorVec4(ImGuiCol_Text);
+            ImColor Separator = ImGui::GetStyleColorVec4(ImGuiCol_Separator);
+
+            emitter << YAML::Key << "Custom Theme";
+            emitter << YAML::Value;
+            emitter << YAML::BeginMap;
+            emitter << YAML::Key << "Button Border" << YAML::Value << ImColorToUInt32(MenuConfig::ButtonBorderColor);
+            emitter << YAML::Key << "Feature Name" << YAML::Value << ImColorToUInt32(FeatureName);
+            emitter << YAML::Key << "Text" << YAML::Value << ImColorToUInt32(Text);
+            emitter << YAML::Key << "Border" << YAML::Value << ImColorToUInt32(borderColor);
+            emitter << YAML::Key << "Button" << YAML::Value << ImColorToUInt32(ButtonColor);
+            emitter << YAML::Key << "Button Hovered" << YAML::Value << ImColorToUInt32(ButtonHovered);
+            emitter << YAML::Key << "Button Active" << YAML::Value << ImColorToUInt32(ButtonActive);
+            emitter << YAML::Key << "Child Window Bg" << YAML::Value << ImColorToUInt32(childBgColor);
+            emitter << YAML::Key << "Frame Bg" << YAML::Value << ImColorToUInt32(FrameBgColor);
+            emitter << YAML::Key << "Frame Bg Hovered" << YAML::Value << ImColorToUInt32(FrameHovered);
+            emitter << YAML::Key << "Frame Bg Active" << YAML::Value << ImColorToUInt32(FrameActive);
+            emitter << YAML::Key << "Header" << YAML::Value << ImColorToUInt32(Header);
+            emitter << YAML::Key << "Header Hovered" << YAML::Value << ImColorToUInt32(HeaderHovered);
+            emitter << YAML::Key << "Header Active" << YAML::Value << ImColorToUInt32(HeaderActive);
+            emitter << YAML::Key << "Scrollbar Bg" << YAML::Value << ImColorToUInt32(ScrollBg);
+            emitter << YAML::Key << "Separator" << YAML::Value << ImColorToUInt32(Separator);
+            emitter << YAML::Key << "Window Bg" << YAML::Value << ImColorToUInt32(windowBgColor);
+            emitter << YAML::EndMap;
+        }
 
         emitter << YAML::EndMap;
 
@@ -299,185 +362,245 @@ namespace MyConfigSaver {
         YAML::Node config = YAML::LoadFile(MenuConfig::path + '\\' + filename);
         if (config["ESP"]) {
             // If you want to make the new version compatible with the old configuration, you can use "<Config>.IsDefine() ? <Config>.as() : <Default Value>"
-            ESPConfig::ESPenabled = config["ESP"]["Enable"].as<bool>();
-            ESPConfig::ShowBoneESP = config["ESP"]["BoneESP"].as<bool>();
-            ESPConfig::ShowBoxESP = config["ESP"]["BoxESP"].as<bool>();
-            MenuConfig::BoxType = config["ESP"]["BoxType"].as<int>();
-            ESPConfig::ShowLineToEnemy = config["ESP"]["SnapLine"].as<bool>();
-            ESPConfig::LinePos = config["ESP"]["LinePos"].as<int>();
-            ESPConfig::ShowHealthBar = config["ESP"]["HealthBar"].as<bool>();
-            ESPConfig::AmmoBar = config["ESP"]["AmmoBar"].IsDefined() ? config["ESP"]["AmmoBar"].as<bool>() : false;
-            ESPConfig::ShowScoping = config["ESP"]["Scoping"].IsDefined() ? config["ESP"]["Scoping"].as<bool>() : false;
-            ESPConfig::ShowWeaponESP = config["ESP"]["WeaponESP"].as<bool>();
-            ESPConfig::ShowEyeRay = config["ESP"]["EyeRay"].as<bool>();
-            ESPConfig::ShowPlayerName = config["ESP"]["PlayerName"].as<bool>();
-            ESPConfig::ShowDistance = config["ESP"]["DistanceESP"].as<bool>();
-            ESPConfig::ShowHealthNum = config["ESP"]["HealthNum"].as<bool>();
-            ESPConfig::ShowHeadBox = config["ESP"]["HeadBox"].as<bool>();
-            ESPConfig::ShowPreview = config["ESP"]["Preview"].as<bool>();
-            ESPConfig::VisibleCheck = config["ESP"]["VisCheck"].as<bool>();
-            ESPConfig::FilledBox = config["ESP"]["FilledBox"].as<bool>();
-            ESPConfig::FilledVisBox = config["ESP"]["FilledVisBox"].as<bool>();
-            ESPConfig::MultiColor = config["ESP"]["MultiColor"].as<bool>();
-            ESPConfig::OutLine = config["ESP"]["OutLine"].as<bool>();
-            ESPConfig::BoxRounding = config["ESP"]["BoxRounding"].as<float>();
-            ESPConfig::ShowIsScoped = config["ESP"]["ShowScoped"].IsDefined() ? config["ESP"]["ShowScoped"].as<bool>() : false;
-            ESPConfig::ArmorBar = config["ESP"]["ArmorBar"].IsDefined() ? config["ESP"]["ArmorBar"].as<bool>() : false;
-            ESPConfig::ShowArmorNum = config["ESP"]["ArmorNum"].IsDefined() ? config["ESP"]["ArmorNum"].as<bool>() : false;
-            ESPConfig::BoneColor.Value.x = config["ESP"]["BoneColor"]["r"].as<float>();
-            ESPConfig::BoneColor.Value.y = config["ESP"]["BoneColor"]["g"].as<float>();
-            ESPConfig::BoneColor.Value.z = config["ESP"]["BoneColor"]["b"].as<float>();
-            ESPConfig::BoneColor.Value.w = config["ESP"]["BoneColor"]["a"].as<float>();
-            ESPConfig::BoxColor.Value.x = config["ESP"]["BoxColor"]["r"].as<float>();
-            ESPConfig::BoxColor.Value.y = config["ESP"]["BoxColor"]["g"].as<float>();
-            ESPConfig::BoxColor.Value.z = config["ESP"]["BoxColor"]["b"].as<float>();
-            ESPConfig::BoxColor.Value.w = config["ESP"]["BoxColor"]["a"].as<float>();
-            ESPConfig::LineToEnemyColor.Value.x = config["ESP"]["SnapLineColor"]["r"].as<float>();
-            ESPConfig::LineToEnemyColor.Value.y = config["ESP"]["SnapLineColor"]["g"].as<float>();
-            ESPConfig::LineToEnemyColor.Value.z = config["ESP"]["SnapLineColor"]["b"].as<float>();
-            ESPConfig::LineToEnemyColor.Value.w = config["ESP"]["SnapLineColor"]["a"].as<float>();
-            ESPConfig::HeadBoxColor.Value.x = config["ESP"]["HeadBoxColor"]["r"].as<float>();
-            ESPConfig::HeadBoxColor.Value.y = config["ESP"]["HeadBoxColor"]["g"].as<float>();
-            ESPConfig::HeadBoxColor.Value.z = config["ESP"]["HeadBoxColor"]["b"].as<float>();
-            ESPConfig::HeadBoxColor.Value.w = config["ESP"]["HeadBoxColor"]["a"].as<float>();
-            ESPConfig::EyeRayColor.Value.x = config["ESP"]["EyeRayColor"]["r"].as<float>();
-            ESPConfig::EyeRayColor.Value.y = config["ESP"]["EyeRayColor"]["g"].as<float>();
-            ESPConfig::EyeRayColor.Value.z = config["ESP"]["EyeRayColor"]["b"].as<float>();
-            ESPConfig::EyeRayColor.Value.w = config["ESP"]["EyeRayColor"]["a"].as<float>();
-            ESPConfig::VisibleColor.Value.x = config["ESP"]["VisibleColor"]["r"].as<float>();
-            ESPConfig::VisibleColor.Value.y = config["ESP"]["VisibleColor"]["g"].as<float>();
-            ESPConfig::VisibleColor.Value.z = config["ESP"]["VisibleColor"]["b"].as<float>();
-            ESPConfig::VisibleColor.Value.w = config["ESP"]["VisibleColor"]["a"].as<float>();
-            ESPConfig::FilledColor.Value.x = config["ESP"]["FilledColor"]["r"].as<float>();
-            ESPConfig::FilledColor.Value.y = config["ESP"]["FilledColor"]["g"].as<float>();
-            ESPConfig::FilledColor.Value.z = config["ESP"]["FilledColor"]["b"].as<float>();
-            ESPConfig::FilledColor.Value.w = config["ESP"]["FilledColor"]["a"].as<float>();
-            ESPConfig::FilledColor2.Value.x = config["ESP"]["FilledColor2"]["r"].as<float>();
-            ESPConfig::FilledColor2.Value.y = config["ESP"]["FilledColor2"]["g"].as<float>();
-            ESPConfig::FilledColor2.Value.z = config["ESP"]["FilledColor2"]["b"].as<float>();
-            ESPConfig::FilledColor2.Value.w = config["ESP"]["FilledColor2"]["a"].as<float>();
-            ESPConfig::BoxFilledVisColor.Value.x = config["ESP"]["FilledVisColor"]["r"].as<float>();
-            ESPConfig::BoxFilledVisColor.Value.y = config["ESP"]["FilledVisColor"]["g"].as<float>();
-            ESPConfig::BoxFilledVisColor.Value.z = config["ESP"]["FilledVisColor"]["b"].as<float>();
-            ESPConfig::BoxFilledVisColor.Value.w = config["ESP"]["FilledVisColor"]["a"].as<float>();
-            ESPConfig::PenisColor.Value.x = config["ESP"]["PenisColor"]["r"].as<float>();
-            ESPConfig::PenisColor.Value.y = config["ESP"]["PenisColor"]["g"].as<float>();
-            ESPConfig::PenisColor.Value.z = config["ESP"]["PenisColor"]["b"].as<float>();
-            ESPConfig::PenisColor.Value.w = config["ESP"]["PenisColor"]["a"].as<float>();
-            ESPConfig::ShowPenis = config["ESP"]["PenisESP"].as<bool>();
-            ESPConfig::PenisLength = config["ESP"]["PenisLength"].as<float>();
-            ESPConfig::PenisSize = config["ESP"]["PenisSize"].as<float>();
+            ESPConfig::ESPenabled = ReadData(config["ESP"]["Enable"], false);
+            ESPConfig::ShowBoneESP = ReadData(config["ESP"]["BoneESP"], false);
+            ESPConfig::ShowBoxESP = ReadData(config["ESP"]["BoxESP"], false);
+            MenuConfig::BoxType = ReadData(config["ESP"]["BoxType"], 0);
+            ESPConfig::ShowLineToEnemy = ReadData(config["ESP"]["SnapLine"], false);
+            ESPConfig::LinePos = ReadData(config["ESP"]["LinePos"], 0);
+            ESPConfig::ShowHealthBar = ReadData(config["ESP"]["HealthBar"], false);
+            ESPConfig::AmmoBar = ReadData(config["ESP"]["AmmoBar"], false);
+            ESPConfig::ShowScoping = ReadData(config["ESP"]["Scoping"], false);
+            ESPConfig::ShowWeaponESP = ReadData(config["ESP"]["WeaponESP"], false);
+            ESPConfig::ShowEyeRay = ReadData(config["ESP"]["EyeRay"], false);
+            ESPConfig::ShowPlayerName = ReadData(config["ESP"]["PlayerName"], false);
+            ESPConfig::ShowDistance = ReadData(config["ESP"]["DistanceESP"], false);
+            ESPConfig::ShowHealthNum = ReadData(config["ESP"]["HealthNum"], false);
+            ESPConfig::ShowHeadBox = ReadData(config["ESP"]["HeadBox"], false);
+            ESPConfig::ShowPreview = ReadData(config["ESP"]["Preview"], false);
+            ESPConfig::VisibleCheck = ReadData(config["ESP"]["VisCheck"], false);
+            ESPConfig::FilledBox = ReadData(config["ESP"]["FilledBox"], false);
+            ESPConfig::FilledVisBox = ReadData(config["ESP"]["FilledVisBox"], false);
+            ESPConfig::MultiColor = ReadData(config["ESP"]["MultiColor"], false);
+            ESPConfig::OutLine = ReadData(config["ESP"]["OutLine"], false);
+            ESPConfig::BoxRounding = ReadData(config["ESP"]["BoxRounding"], 0.f);
+            ESPConfig::ShowIsScoped = ReadData(config["ESP"]["ShowScoped"], false);
+            ESPConfig::ArmorBar = ReadData(config["ESP"]["ArmorBar"], false);
+            ESPConfig::ShowArmorNum = ReadData(config["ESP"]["ArmorNum"], false);
+            ESPConfig::RenderDistance = ReadData(config["ESP"]["MaxRenderDistance"], 80);
+            ESPConfig::BoneColor.Value.x = ReadData(config["ESP"]["BoneColor"]["r"], 0.f);
+            ESPConfig::BoneColor.Value.y = ReadData(config["ESP"]["BoneColor"]["g"], 0.f);
+            ESPConfig::BoneColor.Value.z = ReadData(config["ESP"]["BoneColor"]["b"], 0.f);
+            ESPConfig::BoneColor.Value.w = ReadData(config["ESP"]["BoneColor"]["a"], 0.f);
+            ESPConfig::BoxColor.Value.x = ReadData(config["ESP"]["BoxColor"]["r"], 0.f);
+            ESPConfig::BoxColor.Value.y = ReadData(config["ESP"]["BoxColor"]["g"], 0.f);
+            ESPConfig::BoxColor.Value.z = ReadData(config["ESP"]["BoxColor"]["b"], 0.f);
+            ESPConfig::BoxColor.Value.w = ReadData(config["ESP"]["BoxColor"]["a"], 0.f);
+            ESPConfig::LineToEnemyColor.Value.x = ReadData(config["ESP"]["SnapLineColor"]["r"], 0.f);
+            ESPConfig::LineToEnemyColor.Value.y = ReadData(config["ESP"]["SnapLineColor"]["g"], 0.f);
+            ESPConfig::LineToEnemyColor.Value.z = ReadData(config["ESP"]["SnapLineColor"]["b"], 0.f);
+            ESPConfig::LineToEnemyColor.Value.w = ReadData(config["ESP"]["SnapLineColor"]["a"], 0.f);
+            ESPConfig::HeadBoxColor.Value.x = ReadData(config["ESP"]["HeadBoxColor"]["r"], 0.f);
+            ESPConfig::HeadBoxColor.Value.y = ReadData(config["ESP"]["HeadBoxColor"]["g"], 0.f);
+            ESPConfig::HeadBoxColor.Value.z = ReadData(config["ESP"]["HeadBoxColor"]["b"], 0.f);
+            ESPConfig::HeadBoxColor.Value.w = ReadData(config["ESP"]["HeadBoxColor"]["a"], 0.f);
+            ESPConfig::EyeRayColor.Value.x = ReadData(config["ESP"]["EyeRayColor"]["r"], 0.f);
+            ESPConfig::EyeRayColor.Value.y = ReadData(config["ESP"]["EyeRayColor"]["g"], 0.f);
+            ESPConfig::EyeRayColor.Value.z = ReadData(config["ESP"]["EyeRayColor"]["b"], 0.f);
+
         }
         if (config["Crosshairs"]) {
-            CrosshairsCFG::ShowCrossHair = config["Crosshairs"]["Enable"].as<bool>();
-            CrosshairsCFG::CrossHairSize = config["Crosshairs"]["Size"].as<float>();
-            CrosshairsCFG::drawDot = config["Crosshairs"]["Dot"].as<bool>();
-            CrosshairsCFG::drawCrossline = config["Crosshairs"]["Crossline"].as<bool>();
-            CrosshairsCFG::tStyle = config["Crosshairs"]["tStyle"].as<bool>();
-            CrosshairsCFG::drawCircle = config["Crosshairs"]["Circle"].as<bool>();
-            CrosshairsCFG::drawOutLine = config["Crosshairs"]["Outline"].as<bool>();
-            CrosshairsCFG::DynamicGap = config["Crosshairs"]["DynamicGap"].as<bool>();
-            CrosshairsCFG::TeamCheck = config["Crosshairs"]["TeamCheck"].as<bool>();
-            CrosshairsCFG::crosshairPreset = config["Crosshairs"]["Preset"].as<int>();
-            CrosshairsCFG::Gap = config["Crosshairs"]["Gap"].as<int>();
-            CrosshairsCFG::HorizontalLength = config["Crosshairs"]["H_Length"].as<int>();
-            CrosshairsCFG::VerticalLength = config["Crosshairs"]["V_Length"].as<int>();
-            CrosshairsCFG::Thickness = config["Crosshairs"]["Thickness"].as<int>();
-            CrosshairsCFG::DotSize = config["Crosshairs"]["DotSize"].as<float>();
-            CrosshairsCFG::CircleRadius = config["Crosshairs"]["CircleRadius"].as<float>();
-            CrosshairsCFG::CrossHairColor.Value.x = config["Crosshairs"]["CrosshairsColor"]["r"].as<float>();
-            CrosshairsCFG::CrossHairColor.Value.y = config["Crosshairs"]["CrosshairsColor"]["g"].as<float>();
-            CrosshairsCFG::CrossHairColor.Value.z = config["Crosshairs"]["CrosshairsColor"]["b"].as<float>();
-            CrosshairsCFG::CrossHairColor.Value.w = config["Crosshairs"]["CrosshairsColor"]["a"].as<float>();
-            CrosshairsCFG::TargetedColor.Value.x = config["Crosshairs"]["TargetedColor"]["r"].as<float>();
-            CrosshairsCFG::TargetedColor.Value.y = config["Crosshairs"]["TargetedColor"]["g"].as<float>();
-            CrosshairsCFG::TargetedColor.Value.z = config["Crosshairs"]["TargetedColor"]["b"].as<float>();
-            CrosshairsCFG::TargetedColor.Value.w = config["Crosshairs"]["TargetedColor"]["a"].as<float>();
+            CrosshairsCFG::ShowCrossHair = ReadData(config["Crosshairs"]["Enable"], false);
+            CrosshairsCFG::CrossHairSize = ReadData(config["Crosshairs"]["Size"], 0.f);
+            CrosshairsCFG::drawDot = ReadData(config["Crosshairs"]["Dot"], false);
+            CrosshairsCFG::drawCrossline = ReadData(config["Crosshairs"]["Crossline"], false);
+            CrosshairsCFG::tStyle = ReadData(config["Crosshairs"]["tStyle"], false);
+            CrosshairsCFG::drawCircle = ReadData(config["Crosshairs"]["Circle"], false);
+            CrosshairsCFG::drawOutLine = ReadData(config["Crosshairs"]["Outline"], false);
+            CrosshairsCFG::DynamicGap = ReadData(config["Crosshairs"]["DynamicGap"], false);
+            CrosshairsCFG::TeamCheck = ReadData(config["Crosshairs"]["TeamCheck"], false);
+            CrosshairsCFG::crosshairPreset = ReadData(config["Crosshairs"]["Preset"], 0);
+            CrosshairsCFG::Gap = ReadData(config["Crosshairs"]["Gap"], 0);
+            CrosshairsCFG::HorizontalLength = ReadData(config["Crosshairs"]["H_Length"], 0);
+            CrosshairsCFG::VerticalLength = ReadData(config["Crosshairs"]["V_Length"], 0);
+            CrosshairsCFG::Thickness = ReadData(config["Crosshairs"]["Thickness"], 0);
+            CrosshairsCFG::DotSize = ReadData(config["Crosshairs"]["DotSize"], 0.f);
+            CrosshairsCFG::CircleRadius = ReadData(config["Crosshairs"]["CircleRadius"], 0.f);
+            MenuConfig::TargetingCrosshairs = ReadData(config["Crosshairs"]["TargetCheck"], false);
+            CrosshairsCFG::CrossHairColor.Value.x = ReadData(config["Crosshairs"]["CrosshairsColor"]["r"], 0.f);
+            CrosshairsCFG::CrossHairColor.Value.y = ReadData(config["Crosshairs"]["CrosshairsColor"]["g"], 0.f);
+            CrosshairsCFG::CrossHairColor.Value.z = ReadData(config["Crosshairs"]["CrosshairsColor"]["b"], 0.f);
+            CrosshairsCFG::CrossHairColor.Value.w = ReadData(config["Crosshairs"]["CrosshairsColor"]["a"], 0.f);
+            CrosshairsCFG::TargetedColor.Value.x = ReadData(config["Crosshairs"]["TargetedColor"]["r"], 0.f);
+            CrosshairsCFG::TargetedColor.Value.y = ReadData(config["Crosshairs"]["TargetedColor"]["g"], 0.f);
+            CrosshairsCFG::TargetedColor.Value.z = ReadData(config["Crosshairs"]["TargetedColor"]["b"], 0.f);
+            CrosshairsCFG::TargetedColor.Value.w = ReadData(config["Crosshairs"]["TargetedColor"]["a"], 0.f);
+
         }
         if (config["Radar"])
         {
-            RadarCFG::ShowRadar = config["Radar"]["Enable"].as<bool>();
-            RadarCFG::RadarType = config["Radar"]["Type"].as<int>();
-            RadarCFG::RadarRange = config["Radar"]["Range"].as<float>();
-            RadarCFG::Proportion = config["Radar"]["Proportion"].as<float>();
-            RadarCFG::RadarPointSizeProportion = config["Radar"]["PointProportion"].as<float>();
-            RadarCFG::RadarBgAlpha = config["Radar"]["Alpha"].as<float>();
-            RadarCFG::customRadar = config["Radar"]["Custom"].as<bool>();
-            RadarCFG::ShowRadarCrossLine = config["Radar"]["Crossline"].as<bool>();
-            RadarCFG::RadarCrossLineColor.Value.x = config["Radar"]["CrosslineColor"]["r"].as<float>();
-            RadarCFG::RadarCrossLineColor.Value.y = config["Radar"]["CrosslineColor"]["g"].as<float>();
-            RadarCFG::RadarCrossLineColor.Value.z = config["Radar"]["CrosslineColor"]["b"].as<float>();
-            RadarCFG::RadarCrossLineColor.Value.w = config["Radar"]["CrosslineColor"]["a"].as<float>();
+            RadarCFG::ShowRadar = ReadData(config["Radar"]["Enable"], false);
+            RadarCFG::RadarType = ReadData(config["Radar"]["Type"], 2);
+            RadarCFG::RadarRange = ReadData(config["Radar"]["Range"], 150.f);
+            RadarCFG::Proportion = ReadData(config["Radar"]["Proportion"], 3300.f);
+            RadarCFG::RadarPointSizeProportion = ReadData(config["Radar"]["PointProportion"], 1.f);
+            RadarCFG::RadarBgAlpha = ReadData(config["Radar"]["Alpha"], 0.1f);
+            RadarCFG::customRadar = ReadData(config["Radar"]["Custom"], false);
+            RadarCFG::ShowRadarCrossLine = ReadData(config["Radar"]["Crossline"], false);
+            RadarCFG::RadarCrossLineColor.Value.x = ReadData(config["Radar"]["CrosslineColor"]["r"], 0.f);
+            RadarCFG::RadarCrossLineColor.Value.y = ReadData(config["Radar"]["CrosslineColor"]["g"], 0.f);
+            RadarCFG::RadarCrossLineColor.Value.z = ReadData(config["Radar"]["CrosslineColor"]["b"], 0.f);
+            RadarCFG::RadarCrossLineColor.Value.w = ReadData(config["Radar"]["CrosslineColor"]["a"], 0.f);
+
         }
         if (config["Misc"])
         {
-            MiscCFG::BunnyHop = config["Misc"]["Bhop"].as<bool>();
-            MenuConfig::ShowHeadShootLine = config["Misc"]["HeadShootLine"].as<bool>();
-            MenuConfig::HeadShootLineColor.Value.x = config["Misc"]["HeadShootLineColor"]["r"].as<float>();
-            MenuConfig::HeadShootLineColor.Value.y = config["Misc"]["HeadShootLineColor"]["g"].as<float>();
-            MenuConfig::HeadShootLineColor.Value.z = config["Misc"]["HeadShootLineColor"]["b"].as<float>();
-            MenuConfig::HeadShootLineColor.Value.w = config["Misc"]["HeadShootLineColor"]["a"].as<float>();
-            MiscCFG::WorkInSpec = config["Misc"]["WorkInSpec"].as<bool>();
-            MiscCFG::FovHacker = config["Misc"]["Fov"].IsDefined() ? config["Misc"]["Fov"].as<int>() : 90;
-            MiscCFG::FlashImmunity = config["Misc"]["FlashImmunity"].IsDefined() ? config["Misc"]["FlashImmunity"].as<float>() : 0.f;
-            MiscCFG::CheatList = config["Misc"]["CheatList"].IsDefined() ? config["Misc"]["CheatList"].as<bool>() : false;
-            MiscCFG::WaterMark = config["Misc"]["Watermark"].as<bool>();
-            MiscCFG::HitSound = config["Misc"]["HitSound"].as<bool>();
-            MiscCFG::bmbTimer = config["Misc"]["BombTimer"].as<bool>();
-            MiscCFG::BombTimerCol.Value.x = config["Misc"]["TimerColor"]["r"].as<float>();
-            MiscCFG::BombTimerCol.Value.y = config["Misc"]["TimerColor"]["g"].as<float>();
-            MiscCFG::BombTimerCol.Value.z = config["Misc"]["TimerColor"]["b"].as<float>();
-            MiscCFG::BombTimerCol.Value.w = config["Misc"]["TimerColor"]["a"].as<float>();
-            MiscCFG::FastStop = config["Misc"]["FastStop"].as<bool>();
-            MiscCFG::SpecList = config["Misc"]["SpecList"].as<bool>();
-            MiscCFG::EnemySensor = config["Misc"]["Glow"].as<bool>();
-            MiscCFG::RadarHack = config["Misc"]["RadarHack"].IsDefined() ? config["Misc"]["RadarHack"].as<bool>() : false;
-            MiscCFG::MoneyService = config["Misc"]["MoneyService"]["Enable"].IsDefined() ? config["Misc"]["MoneyService"]["Enable"].as<bool>() : false;
-            MiscCFG::ShowCashSpent = config["Misc"]["MoneyService"]["ShowCashSpent"].IsDefined() ? config["Misc"]["MoneyService"]["ShowCashSpent"].as<bool>() : false;
-            MiscCFG::NoSmoke = config["Misc"]["NoSmoke"].IsDefined() ? config["Misc"]["NoSmoke"].as<bool>() : false;
-            MenuConfig::TeamCheck = config["Misc"]["TeamCheck"].as<bool>();
-            MenuConfig::BypassOBS = config["Misc"]["AntiRecord"].as<bool>();
-            MiscCFG::Jitter = config["Misc"]["Jitter"].IsDefined() ? config["Misc"]["Jitter"].as<bool>() : false;
-            MiscCFG::SmokeColored = config["Misc"]["SmokeColor"]["Enable"].IsDefined() ? config["Misc"]["SmokeColor"]["Enable"].as<bool>() : false;
-            MiscCFG::SmokeColor.Value.x = config["Misc"]["SmokeColor"]["r"].IsDefined() ? config["Misc"]["SmokeColor"]["r"].as<float>() : 255.f;
-            MiscCFG::SmokeColor.Value.y = config["Misc"]["SmokeColor"]["g"].IsDefined() ? config["Misc"]["SmokeColor"]["g"].as<float>() : 0.f;
-            MiscCFG::SmokeColor.Value.z = config["Misc"]["SmokeColor"]["b"].IsDefined() ? config["Misc"]["SmokeColor"]["b"].as<float>() : 0.f;
+            MiscCFG::BunnyHop = ReadData(config["Misc"]["Bhop"], false);
+            MenuConfig::ShowHeadShootLine = ReadData(config["Misc"]["HeadShootLine"], false);
+            MenuConfig::HeadShootLineColor.Value.x = ReadData(config["Misc"]["HeadShootLineColor"]["r"], 0.f);
+            MenuConfig::HeadShootLineColor.Value.y = ReadData(config["Misc"]["HeadShootLineColor"]["g"], 0.f);
+            MenuConfig::HeadShootLineColor.Value.z = ReadData(config["Misc"]["HeadShootLineColor"]["b"], 0.f);
+            MenuConfig::HeadShootLineColor.Value.w = ReadData(config["Misc"]["HeadShootLineColor"]["a"], 0.f);
+            MiscCFG::WorkInSpec = ReadData(config["Misc"]["WorkInSpec"], false);
+            MiscCFG::FovHacker = ReadData(config["Misc"]["Fov"], 90);
+            MiscCFG::FlashImmunity = ReadData(config["Misc"]["FlashImmunity"], 0.f);
+            MiscCFG::CheatList = ReadData(config["Misc"]["CheatList"], false);
+            MiscCFG::WaterMark = ReadData(config["Misc"]["Watermark"], false);
+            MiscCFG::HitSound = ReadData(config["Misc"]["HitSounds"], 0);
+            MiscCFG::bmbTimer = ReadData(config["Misc"]["BombTimer"], false);
+            MiscCFG::BombTimerCol.Value.x = ReadData(config["Misc"]["TimerColor"]["r"], 0.f);
+            MiscCFG::BombTimerCol.Value.y = ReadData(config["Misc"]["TimerColor"]["g"], 0.f);
+            MiscCFG::BombTimerCol.Value.z = ReadData(config["Misc"]["TimerColor"]["b"], 0.f);
+            MiscCFG::BombTimerCol.Value.w = ReadData(config["Misc"]["TimerColor"]["a"], 0.f);
+            MiscCFG::FastStop = ReadData(config["Misc"]["FastStop"], false);
+            MiscCFG::SpecList = ReadData(config["Misc"]["SpecList"], false);
+            MiscCFG::EnemySensor = ReadData(config["Misc"]["Glow"], false);
+            MiscCFG::RadarHack = ReadData(config["Misc"]["RadarHack"], false);
+            MiscCFG::MoneyService = ReadData(config["Misc"]["MoneyService"]["Enable"], false);
+            MiscCFG::ShowCashSpent = ReadData(config["Misc"]["MoneyService"]["ShowCashSpent"], false);
+            MiscCFG::NoSmoke = ReadData(config["Misc"]["NoSmoke"], false);
+            MiscCFG::NightMode = ReadData(config["Misc"]["NightMode"], false);
+            MiscCFG::NightModeAlpha = ReadData(config["Misc"]["NightModeAlpha"], 0);
+            MenuConfig::TeamCheck = ReadData(config["Misc"]["TeamCheck"], true);
+            MenuConfig::BypassOBS = ReadData(config["Misc"]["AntiRecord"], false);
+            MiscCFG::Jitter = ReadData(config["Misc"]["Jitter"], false);
+            MiscCFG::SmokeColored = ReadData(config["Misc"]["SmokeColor"]["Enable"], false);
+            MiscCFG::SmokeColor.Value.x = ReadData(config["Misc"]["SmokeColor"]["r"], 255.f);
+            MiscCFG::SmokeColor.Value.y = ReadData(config["Misc"]["SmokeColor"]["g"], 0.f);
+            MiscCFG::SmokeColor.Value.z = ReadData(config["Misc"]["SmokeColor"]["b"], 0.f);
         }
         if (config["Aimbot"])
         {
-            MenuConfig::AimBot = config["Aimbot"]["Enable"].as<bool>();
-            MenuConfig::AimAlways = config["Aimbot"]["AutoLock"].as<bool>();
-            MenuConfig::AimToggleMode = config["Aimbot"]["ToggleMode"].as<bool>();
-            MenuConfig::AimBotHotKey = config["Aimbot"]["Hotkey"].as<int>();
-            AimControl::AimFov = config["Aimbot"]["Fov"].as<float>();
-            ESPConfig::DrawFov = config["Aimbot"]["FovCircle"].as<bool>();
-            MenuConfig::FovCircleColor.Value.x = config["Aimbot"]["CircleColor"]["r"].as<float>();
-            MenuConfig::FovCircleColor.Value.y = config["Aimbot"]["CircleColor"]["g"].as<float>();
-            MenuConfig::FovCircleColor.Value.z = config["Aimbot"]["CircleColor"]["b"].as<float>();
-            MenuConfig::FovCircleColor.Value.w = config["Aimbot"]["CircleColor"]["a"].as<float>();
-            AimControl::Smooth = config["Aimbot"]["Smooth"].as<float>();
-            MenuConfig::AimPosition = config["Aimbot"]["AimPos"].as<int>();
-            MenuConfig::VisibleCheck = config["Aimbot"]["VisibleCheck"].as<bool>();
-            AimControl::ScopeOnly = config["Aimbot"]["ScopeOnly"].IsDefined() ? config["Aimbot"]["ScopeOnly"].as<bool>() : false;
-            AimControl::AutoShot = config["Aimbot"]["AutoShot"].IsDefined() ? config["Aimbot"]["AutoShot"].as<bool>() : false;
+            MenuConfig::AimBot = ReadData(config["Aimbot"]["Enable"], false);
+            AimControl::Rage = ReadData(config["Aimbot"]["Ragebot"], false);
+            AimControl::AimLock = ReadData(config["Aimbot"]["AimLock"], false);
+            MenuConfig::AimToggleMode = ReadData(config["Aimbot"]["ToggleMode"], false);
+            MenuConfig::AimBotHotKey = ReadData(config["Aimbot"]["Hotkey"], 0);
+            AimControl::AimBullet = ReadData(config["Aimbot"]["AimBullet"], 0);
+            AimControl::AimFov = ReadData(config["Aimbot"]["Fov"], 5.f);
+            AimControl::AimFovMin = ReadData(config["Aimbot"]["FovMin"], .5f);
+            ESPConfig::DrawFov = ReadData(config["Aimbot"]["FovCircle"], false);
+            MenuConfig::FovCircleColor.Value.x = ReadData(config["Aimbot"]["CircleColor"]["r"], 0.f);
+            MenuConfig::FovCircleColor.Value.y = ReadData(config["Aimbot"]["CircleColor"]["g"], 0.f);
+            MenuConfig::FovCircleColor.Value.z = ReadData(config["Aimbot"]["CircleColor"]["b"], 0.f);
+            MenuConfig::FovCircleColor.Value.w = ReadData(config["Aimbot"]["CircleColor"]["a"], 0.f);
+            AimControl::Smooth = ReadData(config["Aimbot"]["Smooth"], 2.f);
+            MenuConfig::VisibleCheck = ReadData(config["Aimbot"]["VisibleCheck"], true);
+            AimControl::IgnoreFlash = ReadData(config["Aimbot"]["IgnoreFlash"], false);
+            AimControl::ScopeOnly = ReadData(config["Aimbot"]["ScopeOnly"], false);
+            AimControl::AutoShot = ReadData(config["Aimbot"]["AutoShot"], false);
+        }
+        if (config["Recoil Control System"])
+        {
+            MenuConfig::RCS = ReadData(config["Recoil Control System"]["Enable"], false);
+            RCS::RCSScale.x = ReadData(config["Recoil Control System"]["Yaw"], 1.f);
+            RCS::RCSScale.y = ReadData(config["Recoil Control System"]["Pitch"], 1.f);
         }
         if (config["Triggerbot"])
         {
-            MenuConfig::TriggerBot = config["Triggerbot"]["Enable"].as<bool>();
-            MenuConfig::TriggerHotKey = config["Triggerbot"]["Hotkey"].as<int>();
-            TriggerBot::TriggerDelay = config["Triggerbot"]["Delay"].as<float>();
-            TriggerBot::FakeShotDelay = config["Triggerbot"]["FakeShot"].as<float>();
-            MenuConfig::TriggerAlways = config["Triggerbot"]["AutoMode"].as<bool>();
+            MenuConfig::TriggerBot = ReadData(config["Triggerbot"]["Enable"], false);
+            MenuConfig::TriggerHotKey = ReadData(config["Triggerbot"]["Hotkey"], 0);
+            TriggerBot::TriggerDelay = ReadData(config["Triggerbot"]["Delay"], 20);
+            TriggerBot::FakeShotDelay = ReadData(config["Triggerbot"]["FakeShot"], 200);
+            TriggerBot::ScopeOnly = ReadData(config["Triggerbot"]["ScopeOnly"], false);
+            TriggerBot::IgnoreFlash = ReadData(config["Triggerbot"]["IgnoreFlash"], false);
+            MenuConfig::TriggerAlways = ReadData(config["Triggerbot"]["AutoMode"], false);
         }
         if (config["Menu"])
         {
-            MenuConfig::Theme = config["Menu"]["Theme"].as<int>();
-            MenuConfig::Language = config["Menu"]["Language"].IsDefined() ? config["Menu"]["Language"].as<int>() : 0;
+            MenuConfig::SafeMode = ReadData(config["Menu"]["SafeMode"], true);
+            MenuConfig::MaxRenderFPS = ReadData(config["Menu"]["RenderFrameLimit"], MenuConfig::MaxFrameRate);
+            MenuConfig::Theme = ReadData(config["Menu"]["Theme"], 0);
+        }
+
+        if (MenuConfig::Theme == 2)
+        {
+            // Custom Theme Loader
+            if (config["Custom Theme"])
+            {
+                ImColor windowBgColor = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+                ImColor borderColor = ImGui::GetStyleColorVec4(ImGuiCol_Border);
+                ImColor childBgColor = ImGui::GetStyleColorVec4(ImGuiCol_ChildBg);
+                ImColor ButtonColor = ImGui::GetStyleColorVec4(ImGuiCol_Button);
+                ImColor ButtonHovered = ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered);
+                ImColor ButtonActive = ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive);
+                ImColor FrameBgColor = ImGui::GetStyleColorVec4(ImGuiCol_FrameBg);
+                ImColor FrameHovered = ImGui::GetStyleColorVec4(ImGuiCol_FrameBgHovered);
+                ImColor FrameActive = ImGui::GetStyleColorVec4(ImGuiCol_FrameBgActive);
+                ImColor Header = ImGui::GetStyleColorVec4(ImGuiCol_Header);
+                ImColor HeaderActive = ImGui::GetStyleColorVec4(ImGuiCol_HeaderActive);
+                ImColor HeaderHovered = ImGui::GetStyleColorVec4(ImGuiCol_HeaderHovered);
+                ImColor ScrollBg = ImGui::GetStyleColorVec4(ImGuiCol_ScrollbarBg);
+
+                ImColor FeatureName = ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled);
+                ImColor Text = ImGui::GetStyleColorVec4(ImGuiCol_Text);
+                ImColor Separator = ImGui::GetStyleColorVec4(ImGuiCol_Separator);
+
+                MenuConfig::ButtonBorderColor = UInt32ToImColor(config["Custom Theme"]["Button Border"].as<uint32_t>());
+                FeatureName = UInt32ToImColor(config["Custom Theme"]["Feature Name"].as<uint32_t>());
+                Text = UInt32ToImColor(config["Custom Theme"]["Text"].as<uint32_t>());
+                Separator = UInt32ToImColor(config["Custom Theme"]["Separator"].as<uint32_t>());
+                windowBgColor = UInt32ToImColor(config["Custom Theme"]["Window Bg"].as<uint32_t>());
+                borderColor = UInt32ToImColor(config["Custom Theme"]["Border"].as<uint32_t>());
+                childBgColor = UInt32ToImColor(config["Custom Theme"]["Child Window Bg"].as<uint32_t>());
+                ButtonColor = UInt32ToImColor(config["Custom Theme"]["Button"].as<uint32_t>());
+                ButtonHovered = UInt32ToImColor(config["Custom Theme"]["Button Hovered"].as<uint32_t>());
+                ButtonActive = UInt32ToImColor(config["Custom Theme"]["Button Active"].as<uint32_t>());
+                FrameBgColor = UInt32ToImColor(config["Custom Theme"]["Frame Bg"].as<uint32_t>());
+                FrameHovered = UInt32ToImColor(config["Custom Theme"]["Frame Bg Hovered"].as<uint32_t>());
+                FrameActive = UInt32ToImColor(config["Custom Theme"]["Frame Bg Active"].as<uint32_t>());
+                Header = UInt32ToImColor(config["Custom Theme"]["Header"].as<uint32_t>());
+                HeaderActive = UInt32ToImColor(config["Custom Theme"]["Header Active"].as<uint32_t>());
+                HeaderHovered = UInt32ToImColor(config["Custom Theme"]["Header Hovered"].as<uint32_t>());
+                ScrollBg = UInt32ToImColor(config["Custom Theme"]["Scrollbar Bg"].as<uint32_t>());
+
+                // Update Color
+                ImGui::GetStyle().Colors[ImGuiCol_Border] = borderColor;
+                ImGui::GetStyle().Colors[ImGuiCol_Button] = ButtonColor;
+                ImGui::GetStyle().Colors[ImGuiCol_ButtonActive] = ButtonActive;
+                ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered] = ButtonHovered;
+                ImGui::GetStyle().Colors[ImGuiCol_FrameBg] = FrameBgColor;
+                ImGui::GetStyle().Colors[ImGuiCol_FrameBgHovered] = FrameHovered;
+                ImGui::GetStyle().Colors[ImGuiCol_FrameBgActive] = FrameActive;
+                ImGui::GetStyle().Colors[ImGuiCol_WindowBg] = windowBgColor;
+                ImGui::GetStyle().Colors[ImGuiCol_ChildBg] = childBgColor;
+                ImGui::GetStyle().Colors[ImGuiCol_Header] = Header;
+                ImGui::GetStyle().Colors[ImGuiCol_HeaderActive] = HeaderActive;
+                ImGui::GetStyle().Colors[ImGuiCol_HeaderHovered] = HeaderHovered;
+                ImGui::GetStyle().Colors[ImGuiCol_ScrollbarBg] = ScrollBg;
+
+                ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = FeatureName;
+                ImGui::GetStyle().Colors[ImGuiCol_Text] = Text;
+                ImGui::GetStyle().Colors[ImGuiCol_Separator] = Separator;
+            }
+        }
+        else {
+            StyleChanger::UpdateSkin(MenuConfig::Theme);
         }
 
         AimControl::SetHotKey(MenuConfig::AimBotHotKey);
-        StyleChanger::UpdateSkin(MenuConfig::Theme);
-        Lang::ChangeLang(MenuConfig::Language);
+        TriggerBot::SetHotKey(MenuConfig::TriggerHotKey);
+        MenuConfig::HitboxUpdated = false;
 
         std::cout << "[Info] Configuration loaded from " << MenuConfig::path + '\\' + filename << std::endl;
     }

@@ -145,10 +145,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="AimBot.hpp" />
+    <ClInclude Include="Features\Aimbot\Ragebot.hpp" />
     <ClInclude Include="Bone.h" />
     <ClInclude Include="Cheats.h" />
     <ClInclude Include="Entity.h" />
+    <ClInclude Include="Features\Aimbot\Legitbot.hpp" />
     <ClInclude Include="Features\BombTimer.h" />
     <ClInclude Include="Features\Debugger.h" />
     <ClInclude Include="Features\ESP.h" />
@@ -158,6 +159,7 @@
     <ClInclude Include="Features\Misc.h" />
     <ClInclude Include="Features\Mouse.h" />
     <ClInclude Include="Features\RCS.h" />
+    <ClInclude Include="Features\SkinChanger\SkinChanger.h" />
     <ClInclude Include="Features\SpectatorList.h" />
     <ClInclude Include="Features\StyleChanger.h" />
     <ClInclude Include="Font\fontArray.h" />
@@ -183,27 +185,15 @@
     <ClInclude Include="Radar\Radar.h" />
     <ClInclude Include="Render.hpp" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Resources\8964.h" />
     <ClInclude Include="Resources\Images.h" />
     <ClInclude Include="Resources\Language.h" />
-    <ClInclude Include="Resources\Languages\Czech.h" />
-    <ClInclude Include="Resources\Languages\Danish.h" />
-    <ClInclude Include="Resources\Languages\Dutch.h" />
-    <ClInclude Include="Resources\Languages\Francais.h" />
-    <ClInclude Include="Resources\Languages\German.h" />
-    <ClInclude Include="Resources\Languages\Hungarian.h" />
-    <ClInclude Include="Resources\Languages\Korean.h" />
-    <ClInclude Include="Resources\Languages\Polish.h" />
-    <ClInclude Include="Resources\Languages\Portuguese.h" />
-    <ClInclude Include="Resources\Languages\Romanian.h" />
-    <ClInclude Include="Resources\Languages\Ruassian.h" />
-    <ClInclude Include="Resources\Languages\SimplifiedChinese.h" />
-    <ClInclude Include="Resources\Languages\Slovak.h" />
-    <ClInclude Include="Resources\Languages\Spanish.h" />
-    <ClInclude Include="Resources\Languages\Turkish.h" />
+    <ClInclude Include="Resources\Sounds.h" />
     <ClInclude Include="Resources\WeaponIcon.h" />
     <ClInclude Include="TriggerBot.h" />
     <ClInclude Include="Utils\ConfigMenu.hpp" />
     <ClInclude Include="Utils\ConfigSaver.hpp" />
+    <ClInclude Include="Utils\cpp-httplib\httplib.h" />
     <ClInclude Include="Utils\curl\curl.h" />
     <ClInclude Include="Utils\curl\curlver.h" />
     <ClInclude Include="Utils\curl\easy.h" />
@@ -219,10 +209,12 @@
     <ClInclude Include="Utils\Format.h" />
     <ClInclude Include="Utils\Globals.hpp" />
     <ClInclude Include="Utils\GlobalVars.h" />
+    <ClInclude Include="Utils\Initial\system.h" />
+    <ClInclude Include="Utils\Initial\Init.h" />
+    <ClInclude Include="Utils\json\json.hpp" />
     <ClInclude Include="Utils\ProcessManager.hpp" />
     <ClInclude Include="Utils\Random.h" />
     <ClInclude Include="Utils\Style.h" />
-    <ClInclude Include="Utils\Updater.h" />
     <ClInclude Include="Utils\yaml-cpp\anchor.h" />
     <ClInclude Include="Utils\yaml-cpp\binary.h" />
     <ClInclude Include="Utils\yaml-cpp\contrib\anchordict.h" />
@@ -269,6 +261,7 @@
     <ClCompile Include="Features\Glow.cpp" />
     <ClCompile Include="Features\Misc.cpp" />
     <ClCompile Include="Features\Mouse.cpp" />
+    <ClCompile Include="Features\SkinChanger\SkinChanger.cpp" />
     <ClCompile Include="Features\StyleChanger.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="main.cpp" />
@@ -284,7 +277,6 @@
     <ClCompile Include="OS-ImGui\OS-ImGui_Base.cpp" />
     <ClCompile Include="OS-ImGui\OS-ImGui_External.cpp" />
     <ClCompile Include="Radar\Radar.cpp" />
-    <ClCompile Include="Resources\Language.cpp" />
     <ClCompile Include="TriggerBot.cpp" />
     <ClCompile Include="Utils\ConfigMenu.cpp" />
     <ClCompile Include="Utils\ConfigSaver.cpp" />

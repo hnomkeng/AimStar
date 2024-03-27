@@ -3,7 +3,11 @@
 #include "..\MenuConfig.hpp"
 #include "..\Cheats.h"
 #include "GetWeaponIcon.h"
+#include "..\Resources\8964.h"
 #define ICON_FA_EYE "\xef\x81\xae"
+
+ID3D11ShaderResourceView* winniethepooh_srv = NULL;
+int winnie_h = 0, winnie_w = 0;
 
 namespace ESP
 {
@@ -15,7 +19,8 @@ namespace ESP
 		float offsetY;
 	};
 	std::unordered_map<std::string, WeaponIconSize> weaponIconSizes = {
-		{"knife", {20.0f, 20.0f, -8.0f, 0.0f}},
+		{"t_knife", {20.0f, 20.0f, -8.0f, 0.0f}},
+		{"ct_knife", {20.0f, 20.0f, -8.0f, 0.0f}},
 		{"deagle", {20.0f, 20.0f, -8.0f, 0.0f}},
 		{"elite", {20.0f, 20.0f, 0.0f, 0.0f}},
 		{"fiveseven", {20.0f, 20.0f, 0.0f, 0.0f}},
@@ -90,7 +95,7 @@ namespace ESP
 	{
 		uintptr_t ClippingWeapon, WeaponData, WeaponNameAddress;
 		ProcessMgr.ReadMemory(Entity.Pawn.Address + Offset::Pawn.pClippingWeapon, ClippingWeapon);
-		ProcessMgr.ReadMemory(ClippingWeapon + 0x360, WeaponData);
+		ProcessMgr.ReadMemory(ClippingWeapon + Offset::WeaponBaseData.WeaponDataPTR, WeaponData);
 		ProcessMgr.ReadMemory(WeaponData + Offset::WeaponBaseData.szName, WeaponNameAddress);
 		std::string weaponName = "Invalid Weapon Name";
 
@@ -194,6 +199,12 @@ namespace ESP
 					Gui.Line({ Rect.x + Rect.z, Rect.y + Rect.w }, { Rect.x + Rect.z - Rect.z * 0.25f, Rect.y + Rect.w }, ESPConfig::BoxColor, 1.3f);
 					Gui.Line({ Rect.x + Rect.z, Rect.y + Rect.w }, { Rect.x + Rect.z, Rect.y + Rect.w - Rect.w * 0.25f }, ESPConfig::BoxColor, 1.3f);
 				}
+			}
+			if (ESPConfig::winniethepool && MenuConfig::Country == "CN") {
+				if (winniethepooh_srv == nullptr) {
+					Gui.LoadTextureFromMemory(winniethepooh_image, sizeof winniethepooh_image, &winniethepooh_srv, &winnie_h, &winnie_w);
+				}
+				ImGui::GetBackgroundDrawList()->AddImage(winniethepooh_srv, ImVec2(Rect.x,Rect.y), { ImVec2(Rect.x,Rect.y).x+ImVec2(Rect.z,Rect.w).x,ImVec2(Rect.x,Rect.y).y + ImVec2(Rect.z,Rect.w).y });
 			}
 		}
 
@@ -409,6 +420,26 @@ namespace ESP
 				ImVec2 HBE(HBPos.x - 3, HBPos.y + HBSize.y);
 				ImGui::GetWindowDrawList()->AddRectFilled(HBS, HBE, greenColor, 0.0f, ImDrawCornerFlags_All);
 			}
+		}
+		if (ESPConfig::ArmorBar) {
+			ImU32 blueColor = IM_COL32(0, 128, 255, 255);
+			ImVec2 ABPos = centerPos;
+			ImVec2 ABSize = rectSize;
+				
+			if (MenuConfig::BoxType == 1 || MenuConfig::BoxType == 3) {
+				ABPos = { centerPos.x + 20, centerPos.y + 15 };
+				ABSize = { rectSize.x - 2, rectSize.y - 18 };
+			}
+
+			if (ESPConfig::ShowHealthBar)
+			{
+				ABPos.x -= 4;
+				ABSize.x -= 4;
+			}
+			ImVec2 ABS(ABPos.x - 6, ABPos.y);
+			ImVec2 ABE(ABPos.x - 3, ABPos.y + ABSize.y);
+			ImGui::GetWindowDrawList()->AddRectFilled(ABS, ABE, blueColor, 0.0f, ImDrawCornerFlags_All);
+			
 		}
 		if (ESPConfig::AmmoBar) {
 			ImU32 yellowColor = IM_COL32(255, 255, 0, 255);

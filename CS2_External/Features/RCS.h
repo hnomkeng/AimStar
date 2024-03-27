@@ -7,6 +7,7 @@
 namespace RCS
 {
 	inline int RCSBullet = 1;
+	inline Vec2 RCSScale = { 1.f,1.f };
 
 	inline void UpdateAngles(const CEntity& Local, Vec2& Angles)
 	{
@@ -43,13 +44,14 @@ namespace RCS
 			newAngles.x += ScreenCenterX;
 			newAngles.y += ScreenCenterY;
 			Angles = newAngles;
+			oldPunch = aimPunch;
 		}
 		else
 		{
 			oldPunch.x = oldPunch.y = 0.f;
 		}
 
-		if (Local.Pawn.ShotsFired > RCSBullet)
+		if (true/*Local.Pawn.ShotsFired > RCSBullet*/)
 		{
 			Vec2 PunchAngle;
 			if (Local.Pawn.AimPunchCache.Count <= 0 && Local.Pawn.AimPunchCache.Count > 0xFFFF)
@@ -59,6 +61,30 @@ namespace RCS
 
 			Angles.x = PunchAngle.x;
 			Angles.y = PunchAngle.y;
+		}
+	}
+
+	inline void RecoilControl(CEntity LocalPlayer)
+	{
+		if (!MenuConfig::RCS)
+			return;
+		static Vec2 OldPunch;
+		if (LocalPlayer.Pawn.ShotsFired > RCSBullet)
+		{       
+			Vec2 viewAngles = LocalPlayer.Pawn.ViewAngle;
+			Vec2 delta = viewAngles - (viewAngles + (OldPunch - (LocalPlayer.Pawn.AimPunchAngle * 2.f)));
+
+			int MouseX = (int)(delta.y / (LocalPlayer.Client.Sensitivity * 0.011f) * RCSScale.x);
+			int MouseY = (int)(delta.x / (LocalPlayer.Client.Sensitivity * 0.011f) * RCSScale.y);
+
+			if ((GetAsyncKeyState(VK_LBUTTON) & 0x8000))
+				mouse_event(MOUSEEVENTF_MOVE, MouseX, -MouseY, 0, 0);
+
+			OldPunch = LocalPlayer.Pawn.AimPunchAngle * 2.0f;
+		}
+		else
+		{
+			OldPunch = Vec2{ 0,0 };
 		}
 	}
 }

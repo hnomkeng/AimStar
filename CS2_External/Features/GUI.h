@@ -1,12 +1,11 @@
 ﻿#pragma once
 #include "..\MenuConfig.hpp"
 #include "..\Render.hpp"
-#include "..\AimBot.hpp"
+#include "..\Features\Aimbot\Legitbot.hpp"
 #include "..\Radar\Radar.h"
 #include "..\TriggerBot.h"
 #include "..\Utils\ConfigMenu.hpp"
 #include "..\Utils\ConfigSaver.hpp"
-#include "..\Utils\Updater.h"
 
 #include "StyleChanger.h"
 #include "..\Resources\Language.h"
@@ -18,13 +17,77 @@ ID3D11ShaderResourceView* MenuButton1 = NULL;
 ID3D11ShaderResourceView* MenuButton2 = NULL;
 ID3D11ShaderResourceView* MenuButton3 = NULL;
 ID3D11ShaderResourceView* MenuButton4 = NULL;
+ID3D11ShaderResourceView* HitboxImage = NULL;
+
 int LogoW = 0, LogoH = 0;
 int LogoW2 = 0, LogoH2 = 0;
 int buttonW = 0;
 int buttonH = 0;
+int hitboxW = 0, hitboxH = 0;
+
+// checkbox for hitbox
+bool checkbox1 = true;
+bool checkbox2 = false;
+bool checkbox3 = false;
+bool checkbox4 = false;
+bool checkbox5 = false;
 
 namespace GUI
 {
+	void LoadDefaultConfig()
+	{
+		if (!MenuConfig::defaultConfig)
+			return;
+
+		MyConfigSaver::LoadConfig("default.yml");
+		std::cout << "[Info] Default configuration loaded!" << std::endl;
+
+		MenuConfig::defaultConfig = false;
+	}
+
+	inline void InitHitboxList()
+	{
+		if (MenuConfig::HitboxUpdated)
+			return;
+
+		auto HitboxList = AimControl::HitboxList;
+
+		auto it = std::find(HitboxList.begin(), HitboxList.end(), BONEINDEX::head);
+		if (it != HitboxList.end())
+			checkbox1 = true;
+
+		it = std::find(HitboxList.begin(), HitboxList.end(), BONEINDEX::neck_0);
+		if (it != HitboxList.end())
+			checkbox2 = true;
+
+		it = std::find(HitboxList.begin(), HitboxList.end(), BONEINDEX::spine_1);
+		if (it != HitboxList.end())
+			checkbox3 = true;
+
+		it = std::find(HitboxList.begin(), HitboxList.end(), BONEINDEX::spine_2);
+		if (it != HitboxList.end())
+			checkbox4 = true;
+
+		it = std::find(HitboxList.begin(), HitboxList.end(), BONEINDEX::pelvis);
+		if (it != HitboxList.end())
+			checkbox5 = true;
+
+		MenuConfig::HitboxUpdated = false;
+	}
+	void addHitbox(int BoneIndex)
+	{
+		AimControl::HitboxList.push_back(BoneIndex);
+	}
+	void removeHitbox(int BoneIndex)
+	{
+		for (auto it = AimControl::HitboxList.begin(); it != AimControl::HitboxList.end(); ++it) {
+			if (*it == BoneIndex) {
+				AimControl::HitboxList.erase(it);
+				break;
+			}
+		}
+	}
+
 	void LoadImages()
 	{
 		if (AS_Logo == NULL)
@@ -36,6 +99,7 @@ namespace GUI
 			Gui.LoadTextureFromMemory(Images::AimbotButton, sizeof Images::AimbotButton, &MenuButton2, &buttonW, &buttonH);
 			Gui.LoadTextureFromMemory(Images::MiscButton, sizeof Images::MiscButton, &MenuButton3, &buttonW, &buttonH);
 			Gui.LoadTextureFromMemory(Images::ConfigButton, sizeof Images::ConfigButton, &MenuButton4, &buttonW, &buttonH);
+			Gui.LoadTextureFromMemory(Images::ZekamashiImg, sizeof Images::ZekamashiImg, &HitboxImage, &hitboxW, &hitboxH);
 		}
 	}
 
@@ -154,6 +218,8 @@ namespace GUI
 		{
 			ImGui::SetCursorPos(LogoPos);
 			ImGui::Image(ImageID, LogoSize);
+			ImGui::SetCursorPosY(5);
+			ImGui::TextColored(ImColor(255, 255, 255, 20), MenuConfig::HWID.substr(MenuConfig::HWID.length() - 16).c_str());
 
 			ImGui::SetCursorPos(MenuConfig::WCS.Button1Pos);
 			ImGui::Image((void*)MenuButton1, ImVec2(buttonW, buttonH));
@@ -195,6 +261,12 @@ namespace GUI
 				ImVec2(MenuConfig::WCS.Button4Pos.x + buttonW + ImGui::GetWindowPos().x, MenuConfig::WCS.Button4Pos.y + buttonH + ImGui::GetWindowPos().y),
 				BorderColor, 9.f, ImDrawFlags_RoundCornersAll, 2.f);
 
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5);
+			if (MenuConfig::SafeMode)
+				ImGui::TextColored(ImColor(50, 255, 0, 255), "Safe Mode ON");
+			else
+				ImGui::TextColored(ImColor(255, 25, 0, 255), "Safe Mode OFF");
+
 			ImGui::SetCursorPos(MenuConfig::WCS.ChildPos);
 			
 			ImGui::BeginChild("Page", MenuConfig::WCS.ChildSize);
@@ -206,6 +278,7 @@ namespace GUI
 					ImGui::SeparatorText(ICON_FA_EYE" ESP");
 					float MinRounding = 0.f, MaxRouding = 5.f;
 					int MinCombo = 0, MaxCombo = 2;
+					int MinDis = 0, MaxDis = 128;
 					PutSwitch(Lang::ESPtext.Toggle, 10.f, ImGui::GetFrameHeight() * 1.7, &ESPConfig::ESPenabled);
 					if (ESPConfig::ESPenabled)
 					{
@@ -239,6 +312,13 @@ namespace GUI
 						PutSwitch(Lang::ESPtext.PlayerName, 10.f, ImGui::GetFrameHeight() * 1.7, &ESPConfig::ShowPlayerName);
 						PutSwitch(Lang::ESPtext.ScopedESP, 10.f, ImGui::GetFrameHeight() * 1.7, &ESPConfig::ShowIsScoped);
 						PutSwitch(Lang::ESPtext.VisCheck, 10.f, ImGui::GetFrameHeight() * 1.7, &ESPConfig::VisibleCheck, true, "###VisibleCol", reinterpret_cast<float*>(&ESPConfig::VisibleColor));
+						PutSliderInt(Lang::ESPtext.RenderDistance, 10.f, &ESPConfig::RenderDistance, &MinDis, &MaxDis, "%dm");
+
+						if (!MenuConfig::SafeMode)
+						{
+							ImGui::NewLine();
+							PutSwitch(Lang::MiscText.EnemySensor, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::EnemySensor);
+						}
 					}
 					
 					ImGui::NextColumn();
@@ -246,17 +326,7 @@ namespace GUI
 					ImGui::SeparatorText(ICON_FA_GRIN_ALT " ESP Preview");
 					// ESP::RenderPreview({ ImGui::GetColumnWidth(), ImGui::GetCursorPosY() }, { ImGui::GetCursorPosX() - ImGui::GetColumnWidth() * 0.65f, ImGui::GetCursorPosY() - ImGui::GetFrameHeight() });
 					ESP::RenderPreview({ ImGui::GetColumnWidth(), ImGui::GetCursorPosY() });
-					// :P
-					ImGui::NewLine();
-					ImGui::NewLine();
-					ImGui::NewLine();
-					ImGui::NewLine();
-					ImGui::NewLine();
-					ImGui::NewLine();
-					ImGui::NewLine();
-					ImGui::NewLine();
-					ImGui::NewLine();
-					//
+					ImGui::Dummy({ 0.f, ImGui::GetFrameHeight() * 9 });
 
 					ImGui::SeparatorText(ICON_FA_COMPASS" External Radar");
 					float RadarPointSizeProportionMin = 0.8f, RadarPointSizeProportionMax = 2.f;
@@ -267,8 +337,10 @@ namespace GUI
 					if (RadarCFG::ShowRadar)
 					{
 						PutSwitch(Lang::RadarText.CustomCheck, 5.f, ImGui::GetFrameHeight() * 1.7, &RadarCFG::customRadar);
+						
 						if (RadarCFG::customRadar)
 						{
+							PutSwitch(Lang::RadarText.CrossLine, 5.f, ImGui::GetFrameHeight() * 1.7, &RadarCFG::ShowRadarCrossLine);
 							PutSliderFloat(Lang::RadarText.SizeSlider, 5.f, &RadarCFG::RadarPointSizeProportion, &RadarPointSizeProportionMin, &RadarPointSizeProportionMax, "%1.f");
 							PutSliderFloat(Lang::RadarText.ProportionSlider, 5.f, &RadarCFG::Proportion, &ProportionMin, &ProportionMax, "%.1f");
 							PutSliderFloat(Lang::RadarText.RangeSlider, 5.f, &RadarCFG::RadarRange, &RadarRangeMin, &RadarRangeMax, "%.1f");
@@ -314,31 +386,42 @@ namespace GUI
 					ImGui::Columns(2, nullptr, false);
 					ImGui::SetCursorPos(ImVec2(15.f, 24.f));
 					ImGui::SeparatorText(ICON_FA_USER" Aimbot");
-					float FovMin = 0.f, FovMax = 25.f;
-					float SmoothMin = 0.f, SmoothMax = 5.f;
+
+					float FovMin = 0.f, FovMax = 25.f, MinFovMax = 1.f;
+					int BulletMin = 0, BulletMax = 5;
+					float SmoothMin = 0.4f, SmoothMax = 5.f;
 					PutSwitch(Lang::AimbotText.Enable, 10.f, ImGui::GetFrameHeight() * 1.7, &MenuConfig::AimBot);
 					if (MenuConfig::AimBot)
 					{
-						if (!MenuConfig::AimAlways)
+						if (!MenuConfig::SafeMode)
+							PutSwitch(Lang::AimbotText.Ragebot, 10.f, ImGui::GetFrameHeight() * 1.7, &AimControl::Rage);
+
+						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10.f);
+						ImGui::TextDisabled(Lang::AimbotText.HotKeyList);
+						ImGui::SameLine();
+						if (ImGui::Combo("###AimKey", &MenuConfig::AimBotHotKey, "LALT\0LBUTTON\0RBUTTON\0XBUTTON1\0XBUTTON2\0CAPITAL\0SHIFT\0CONTROL\0"))
 						{
-							ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10.f);
-							ImGui::TextDisabled(Lang::AimbotText.HotKeyList);
-							ImGui::SameLine();
-							if (ImGui::Combo("###AimKey", &MenuConfig::AimBotHotKey, "LALT\0LBUTTON\0RBUTTON\0XBUTTON1\0XBUTTON2\0CAPITAL\0SHIFT\0CONTROL\0"))
-							{
-								AimControl::SetHotKey(MenuConfig::AimBotHotKey);
-							}
-							PutSwitch(Lang::AimbotText.Toggle, 10.f, ImGui::GetFrameHeight() * 1.7, &MenuConfig::AimToggleMode);
+							AimControl::SetHotKey(MenuConfig::AimBotHotKey);
 						}
-						PutSwitch(Lang::AimbotText.AimLock, 10.f, ImGui::GetFrameHeight() * 1.7, &MenuConfig::AimAlways);
+						if (!AimControl::Rage)
+							PutSliderInt(Lang::AimbotText.BulletSlider, 10.f, &AimControl::AimBullet, &BulletMin, &BulletMax, "%d");
+						PutSwitch(Lang::AimbotText.Toggle, 10.f, ImGui::GetFrameHeight() * 1.7, &MenuConfig::AimToggleMode);
+						PutSwitch(Lang::AimbotText.AimLock, 10.f, ImGui::GetFrameHeight() * 1.7, &AimControl::AimLock);
 						PutSwitch(Lang::AimbotText.DrawFov, 10.f, ImGui::GetFrameHeight() * 1.7, &ESPConfig::DrawFov, true, "###FOVcol", reinterpret_cast<float*>(&MenuConfig::FovCircleColor));
 						PutSwitch(Lang::AimbotText.VisCheck, 10.f, ImGui::GetFrameHeight() * 1.7, &MenuConfig::VisibleCheck);
+						if (!MenuConfig::VisibleCheck && !AimControl::Rage)
+							PutSwitch(Lang::AimbotText.IgnoreFlash, 10.f, ImGui::GetFrameHeight() * 1.7, &AimControl::IgnoreFlash);
 						PutSwitch(Lang::AimbotText.ScopeOnly, 10.f, ImGui::GetFrameHeight() * 1.7, &AimControl::ScopeOnly);
 						PutSwitch(Lang::AimbotText.AutoShot, 10.f, ImGui::GetFrameHeight() * 1.7, &AimControl::AutoShot);
-						PutSliderFloat(Lang::AimbotText.FovSlider, 10.f, &AimControl::AimFov, &FovMin, &FovMax, "%.1f");
-						PutSliderFloat(Lang::AimbotText.SmoothSlider, 10.f, &AimControl::Smooth, &SmoothMin, &SmoothMax, "%.1f");
+						PutSliderFloat(Lang::AimbotText.FovSlider, 10.f, &AimControl::AimFov, &AimControl::AimFovMin, &FovMax, "%.1f");
+						if (!AimControl::Rage)
+						{
+							PutSliderFloat(Lang::AimbotText.FovMinSlider, 10.f, &AimControl::AimFovMin, &FovMin, &MinFovMax, "%.2f");
+							PutSliderFloat(Lang::AimbotText.SmoothSlider, 10.f, &AimControl::Smooth, &SmoothMin, &SmoothMax, "%.1f");
+						}
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10.f);
 						ImGui::TextDisabled(Lang::AimbotText.BoneList);
+						/*
 						ImGui::SameLine();
 						if (ImGui::Combo("###AimPos", &MenuConfig::AimPosition, "Head\0Neck\0Chest\0Penis\0"))
 						{
@@ -360,11 +443,115 @@ namespace GUI
 								break;
 							}
 						}
+						*/
+						ImVec2 StartPos = ImGui::GetCursorScreenPos();
+						ImGui::Image((void*)HitboxImage, ImVec2(hitboxW, hitboxH));
+						ImGui::GetWindowDrawList()->AddLine(ImVec2(StartPos.x + 130, StartPos.y + 74), ImVec2(StartPos.x + 205, StartPos.y + 74), ImColor(ImGui::GetStyleColorVec4(ImGuiCol_Border)), 1.8f); // Head
+						ImGui::SetCursorScreenPos(ImVec2(StartPos.x + 202, StartPos.y + 62)); 
+						if (ImGui::Checkbox("###Head", &checkbox1))
+						{
+							if (checkbox1) {
+								addHitbox(BONEINDEX::head);
+							}
+							else {
+								removeHitbox(BONEINDEX::head);
+							}
+						}
+						ImGui::GetWindowDrawList()->AddLine(ImVec2(StartPos.x + 129, StartPos.y + 103), ImVec2(StartPos.x + 59, StartPos.y + 103), ImColor(ImGui::GetStyleColorVec4(ImGuiCol_Border)), 1.8f); // Neck
+						ImGui::SetCursorScreenPos(ImVec2(StartPos.x + 40, StartPos.y + 91));
+						if (ImGui::Checkbox("###Neck", &checkbox2))
+						{
+							if (checkbox2) {
+								addHitbox(BONEINDEX::neck_0);
+							}
+							else {
+								removeHitbox(BONEINDEX::neck_0);
+							}
+						}
+						ImGui::GetWindowDrawList()->AddLine(ImVec2(StartPos.x + 120, StartPos.y + 141), ImVec2(StartPos.x + 195, StartPos.y + 141), ImColor(ImGui::GetStyleColorVec4(ImGuiCol_Border)), 1.8f); // Chest
+						ImGui::SetCursorScreenPos(ImVec2(StartPos.x + 192, StartPos.y + 129));
+						if (ImGui::Checkbox("###Chest", &checkbox3))
+						{
+							if (checkbox3) {
+								addHitbox(BONEINDEX::spine_1);
+							}
+							else {
+								removeHitbox(BONEINDEX::spine_1);
+							}
+						}
+						ImGui::GetWindowDrawList()->AddLine(ImVec2(StartPos.x + 119, StartPos.y + 167), ImVec2(StartPos.x + 44, StartPos.y + 167), ImColor(ImGui::GetStyleColorVec4(ImGuiCol_Border)), 1.8f); // Penis
+						ImGui::SetCursorScreenPos(ImVec2(StartPos.x + 25, StartPos.y + 155));
+						if (ImGui::Checkbox("###Stomache", &checkbox4))
+						{
+							if (checkbox4) {
+								addHitbox(BONEINDEX::spine_2);
+							}
+							else {
+								removeHitbox(BONEINDEX::spine_2);
+							}
+						}
+						ImGui::GetWindowDrawList()->AddLine(ImVec2(StartPos.x + 119, StartPos.y + 200), ImVec2(StartPos.x + 195, StartPos.y + 200), ImColor(ImGui::GetStyleColorVec4(ImGuiCol_Border)), 1.8f); // Penis
+						ImGui::SetCursorScreenPos(ImVec2(StartPos.x + 192, StartPos.y + 188));
+						if (ImGui::Checkbox("###Penis", &checkbox5))
+						{
+							if (checkbox4) {
+								addHitbox(BONEINDEX::pelvis);
+							}
+							else {
+								removeHitbox(BONEINDEX::pelvis);
+							}
+						}
+						//ImGui::SetCursorScreenPos(ImVec2(StartPos.x, StartPos.y + hitboxH));
 					}
 					ImGui::NextColumn();
 					ImGui::SetCursorPosY(24.f);
 					ImGui::SeparatorText(ICON_FA_ARROW_ALT_CIRCLE_DOWN " RCS");
-					PutSwitch("Enable RCS", 5.f, ImGui::GetFrameHeight() * 1.7, &MenuConfig::RCS);
+					float recoilMin = 0.f, recoilMax = 2.f;
+					PutSwitch(Lang::RCStext.Toggle, 5.f, ImGui::GetFrameHeight() * 1.7, &MenuConfig::RCS);
+					if (MenuConfig::RCS) {
+						PutSliderFloat(Lang::RCStext.Yaw, 5.f, &RCS::RCSScale.x, &recoilMin, &recoilMax, "%.2f");
+						PutSliderFloat(Lang::RCStext.Pitch, 5.f, &RCS::RCSScale.y, &recoilMin, &recoilMax, "%.2f");
+						float scalex = (2.22 - RCS::RCSScale.x) *.5f;
+						float scaley = (2.12 - RCS::RCSScale.y) *.5f;//Simulate reasonable error values
+						ImVec2 BulletPos = ImGui::GetCursorScreenPos();
+
+						// Example Preview
+						ImVec2 BulletPos0, BulletPos1, BulletPos2, BulletPos3, BulletPos4, BulletPos5, BulletPos6, BulletPos7, BulletPos8, BulletPos9, BulletPos10, BulletPos11, BulletPos12, BulletPos13, BulletPos14, BulletPos15;
+						BulletPos.y += 123 * scaley;
+						BulletPos0.x = BulletPos.x + 125; BulletPos0.y = BulletPos.y + 5;
+						BulletPos1.x = BulletPos0.x - 3 * scalex; BulletPos1.y = BulletPos0.y - 5 * scaley;
+						BulletPos2.x = BulletPos1.x + 2 * scalex; BulletPos2.y = BulletPos1.y - 10 * scaley;
+						BulletPos3.x = BulletPos2.x + 4 * scalex; BulletPos3.y = BulletPos2.y - 11 * scaley;
+						BulletPos4.x = BulletPos3.x - 3 * scalex; BulletPos4.y = BulletPos3.y - 31 * scaley;
+						BulletPos5.x = BulletPos4.x - 1 * scalex; BulletPos5.y = BulletPos4.y - 20 * scaley;
+						BulletPos6.x = BulletPos5.x - 2 * scalex; BulletPos6.y = BulletPos5.y - 17 * scaley;
+						BulletPos7.x = BulletPos6.x - 15 * scalex; BulletPos7.y = BulletPos6.y - 9 * scaley;
+						BulletPos8.x = BulletPos7.x + 7 * scalex; BulletPos8.y = BulletPos7.y - 8 * scaley;
+						BulletPos9.x = BulletPos8.x + 33 * scalex; BulletPos9.y = BulletPos8.y + 2 * scaley;
+						BulletPos10.x = BulletPos9.x + 1 * scalex; BulletPos10.y = BulletPos9.y - 16 * scaley;
+						BulletPos11.x = BulletPos10.x - 9 * scalex; BulletPos11.y = BulletPos10.y + 20 * scaley;
+						BulletPos12.x = BulletPos11.x - 3 * scalex; BulletPos12.y = BulletPos11.y - 9 * scaley;
+						BulletPos13.x = BulletPos12.x + 15 * scalex; BulletPos13.y = BulletPos12.y - 5 * scaley;
+						BulletPos14.x = BulletPos13.x + 10 * scalex; BulletPos14.y = BulletPos13.y - 4 * scaley;
+						
+						ImGui::GetWindowDrawList()->AddCircleFilled(BulletPos0, 4.f, ImColor(ImGui::GetStyleColorVec4(ImGuiCol_Border)));
+						ImGui::GetWindowDrawList()->AddCircleFilled(BulletPos1, 4.f, ImColor(ImGui::GetStyleColorVec4(ImGuiCol_Border)));
+						ImGui::GetWindowDrawList()->AddCircleFilled(BulletPos2, 4.f, ImColor(ImGui::GetStyleColorVec4(ImGuiCol_Border)));
+						ImGui::GetWindowDrawList()->AddCircleFilled(BulletPos3, 4.f, ImColor(ImGui::GetStyleColorVec4(ImGuiCol_Border)));
+						ImGui::GetWindowDrawList()->AddCircleFilled(BulletPos4, 4.f, ImColor(ImGui::GetStyleColorVec4(ImGuiCol_Border)));
+						ImGui::GetWindowDrawList()->AddCircleFilled(BulletPos5, 4.f, ImColor(ImGui::GetStyleColorVec4(ImGuiCol_Border)));
+						ImGui::GetWindowDrawList()->AddCircleFilled(BulletPos6, 4.f, ImColor(ImGui::GetStyleColorVec4(ImGuiCol_Border)));
+						ImGui::GetWindowDrawList()->AddCircleFilled(BulletPos7, 4.f, ImColor(ImGui::GetStyleColorVec4(ImGuiCol_Border)));
+						ImGui::GetWindowDrawList()->AddCircleFilled(BulletPos8, 4.f, ImColor(ImGui::GetStyleColorVec4(ImGuiCol_Border)));
+						ImGui::GetWindowDrawList()->AddCircleFilled(BulletPos9, 4.f, ImColor(ImGui::GetStyleColorVec4(ImGuiCol_Border)));
+						ImGui::GetWindowDrawList()->AddCircleFilled(BulletPos10, 4.f, ImColor(ImGui::GetStyleColorVec4(ImGuiCol_Border)));
+						ImGui::GetWindowDrawList()->AddCircleFilled(BulletPos11, 4.f, ImColor(ImGui::GetStyleColorVec4(ImGuiCol_Border)));
+						ImGui::GetWindowDrawList()->AddCircleFilled(BulletPos12, 4.f, ImColor(ImGui::GetStyleColorVec4(ImGuiCol_Border)));
+						ImGui::GetWindowDrawList()->AddCircleFilled(BulletPos13, 4.f, ImColor(ImGui::GetStyleColorVec4(ImGuiCol_Border)));
+						ImGui::GetWindowDrawList()->AddCircleFilled(BulletPos14, 4.f, ImColor(ImGui::GetStyleColorVec4(ImGuiCol_Border)));
+
+						ImGui::SetCursorScreenPos(ImVec2(BulletPos.x, BulletPos.y + 10));
+					}
 
 					ImGui::NewLine();
 					ImGui::SeparatorText(ICON_FA_HAND_POINTER" Triggerbot");
@@ -384,6 +571,8 @@ namespace GUI
 							}
 						}
 						PutSwitch(Lang::TriggerText.Toggle, 5.f, ImGui::GetFrameHeight() * 1.7, &MenuConfig::TriggerAlways);
+						PutSwitch(Lang::TriggerText.ScopeOnly, 5.f, ImGui::GetFrameHeight() * 1.7, &TriggerBot::ScopeOnly);
+						PutSwitch(Lang::AimbotText.IgnoreFlash, 10.f, ImGui::GetFrameHeight() * 1.7, &TriggerBot::IgnoreFlash);
 						PutSliderInt(Lang::TriggerText.DelaySlider, 5.f, &TriggerBot::TriggerDelay, &DelayMin, &DelayMax, "%d ms");
 						PutSliderInt(Lang::TriggerText.FakeShotSlider, 5.f, &TriggerBot::FakeShotDelay, &DurationMin, &DurationMax, "%d ms");
 					}
@@ -394,32 +583,40 @@ namespace GUI
 				if (MenuConfig::WCS.MenuPage == 2)
 				{
 					int FovMin = 60, FovMax = 140;
+					int NightMin = 0, NightMax = 150;
 					float FlashMin = 0.f, FlashMax = 255.f;
 					ImGui::Columns(2, nullptr, false);
 					ImGui::SetCursorPos(ImVec2(15.f, 24.f));
 					ImGui::SeparatorText(ICON_FA_SUN" Misc");
 
-					PutSliderInt(Lang::MiscText.fovchanger, 10.f, &MiscCFG::Fov, &FovMin, &FovMax, "%d");
-					PutSliderFloat(Lang::MiscText.FlashImmunity, 10.f, &MiscCFG::FlashImmunity, &FlashMin, &FlashMax, "%.f");
+					PutSwitch(Lang::MiscText.NightMode, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::NightMode);
+					if (MiscCFG::NightMode)
+						PutSliderInt(Lang::MiscText.Alpha, 10.f, &MiscCFG::NightModeAlpha, &NightMin, &NightMax, "%d");
+					if (!MenuConfig::SafeMode)
+					{
+						PutSliderInt(Lang::MiscText.fovchanger, 10.f, &MiscCFG::Fov, &FovMin, &FovMax, "%d");
+						PutSliderFloat(Lang::MiscText.FlashImmunity, 10.f, &MiscCFG::FlashImmunity, &FlashMin, &FlashMax, "%.f");
+					}
 					PutSwitch(Lang::MiscText.Bhop, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::BunnyHop);
 					PutSwitch(Lang::MiscText.bmbTimer, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::bmbTimer, true, "###bmbTimerCol", reinterpret_cast<float*>(&MiscCFG::BombTimerCol));
 					PutSwitch(Lang::MiscText.CheatList, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::CheatList);
-					PutSwitch(Lang::MiscText.EnemySensor, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::EnemySensor);
 					PutSwitch(Lang::MiscText.FastStop, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::FastStop);
-					PutSwitch(Lang::MiscText.ForceScope, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::ForceScope);
+					if (!MenuConfig::SafeMode)
+						PutSwitch(Lang::MiscText.ForceScope, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::ForceScope);
 					PutSwitch(Lang::MiscText.HeadshotLine, 10.f, ImGui::GetFrameHeight() * 1.7, &MenuConfig::ShowHeadShootLine);
-					PutSwitch(Lang::MiscText.HitSound, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::HitSound);
+					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10.f);
+					ImGui::TextDisabled(Lang::MiscText.HitSound);
+					ImGui::SameLine();
+					ImGui::SetNextItemWidth(170.f);
+					ImGui::Combo("###HitSounds", &MiscCFG::HitSound, "None\0Neverlose\0Skeet\0Fuck\0Senpai\0");
 					PutSwitch(Lang::MiscText.MoneyService, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::MoneyService);
 					if (MiscCFG::MoneyService)
 						PutSwitch(Lang::MiscText.ShowCashSpent, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::ShowCashSpent);
-					PutSwitch(Lang::MiscText.NoSmoke, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::NoSmoke);
-					PutSwitch(Lang::MiscText.RadarHack, 10.f, ImGui::GetFrameHeight() * 1.7f, &MiscCFG::RadarHack);
-					if (MiscCFG::RadarHack)
+					if (!MenuConfig::SafeMode)
 					{
-						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10.f);
-						ImGui::TextColored(ImColor(255, 50, 0, 255), Lang::MiscText.VisCheckDisable);
+						PutSwitch(Lang::MiscText.NoSmoke, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::NoSmoke);
+						PutSwitch(Lang::MiscText.SmokeColor, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::SmokeColored, true, "###SmokeColor", reinterpret_cast<float*>(&MiscCFG::SmokeColor));
 					}
-					PutSwitch(Lang::MiscText.SmokeColor, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::SmokeColored, true, "###SmokeColor", reinterpret_cast<float*>(&MiscCFG::SmokeColor));
 					PutSwitch(Lang::MiscText.SpecCheck, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::WorkInSpec);
 					// PutSwitch(Lang::MiscText.SpecList, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::SpecList);
 					PutSwitch(Lang::MiscText.TeamCheck, 10.f, ImGui::GetFrameHeight() * 1.7, &MenuConfig::TeamCheck);
@@ -433,17 +630,16 @@ namespace GUI
 						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10.f);
 						ImGui::TextColored(ImColor(255, 50, 0, 255), "This might cause BAN");
 					}
+					if (MenuConfig::Country == "CN" && MenuConfig::Language == 6)
+					{
+						PutSwitch("Winnie", 10.f, ImGui::GetFrameHeight() * 1.7, &ESPConfig::winniethepool);
+					}
+
 
 					ImGui::NextColumn();
 					ImGui::SetCursorPosY(24.f);
 					ImGui::SeparatorText(ICON_FA_HEART" Menu Settings");
 					PutSwitch(Lang::MiscText.AntiRecord, 5.f, ImGui::GetFrameHeight() * 1.7, &MenuConfig::BypassOBS);
-					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5.f);
-					ImGui::TextDisabled(Lang::MiscText.LanguageList);
-					ImGui::SameLine();
-					if (ImGui::Combo("###Language", &MenuConfig::Language,
-						"English\0Danish\0German\0Polish\0Portuguese\0Russian\0Simplified Chinese\0Slovak\0French\0Turkish\0Hungarian\0Dutch\0Cezch\0Spanish\0Romanian\0"))
-						Lang::ChangeLang(MenuConfig::Language);
 					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5.f);
 					ImGui::TextDisabled(Lang::MiscText.ThemeList);
 					ImGui::SameLine();
@@ -464,9 +660,16 @@ namespace GUI
 						ImColor HeaderActive = ImGui::GetStyleColorVec4(ImGuiCol_HeaderActive);
 						ImColor HeaderHovered = ImGui::GetStyleColorVec4(ImGuiCol_HeaderHovered);
 						ImColor ScrollBg = ImGui::GetStyleColorVec4(ImGuiCol_ScrollbarBg);
+
+						ImColor FeatureName = ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled);
+						ImColor Text = ImGui::GetStyleColorVec4(ImGuiCol_Text);
+						ImColor Separator = ImGui::GetStyleColorVec4(ImGuiCol_Separator);
 						// ########################################
 						ImGui::SeparatorText("Theme Color Settings");
 						PutColorEditor("Button Border", "###ThemeCol1", 5.f, 0.f, reinterpret_cast<float*>(&MenuConfig::ButtonBorderColor));
+						PutColorEditor("FeatureName", "###ThemeCol16", 5.f, 0.f, reinterpret_cast<float*>(&FeatureName));
+						PutColorEditor("Text", "###ThemeCol17", 5.f, 0.f, reinterpret_cast<float*>(&Text));
+
 						PutColorEditor("Border", "###ThemeCol2", 5.f, 0.f, reinterpret_cast<float*>(&borderColor));
 						PutColorEditor("Button", "###ThemeCol3", 5.f, 0.f, reinterpret_cast<float*>(&ButtonColor));
 						PutColorEditor("Button Hovered", "###ThemeCol4", 5.f, 0.f, reinterpret_cast<float*>(&ButtonHovered));
@@ -479,7 +682,8 @@ namespace GUI
 						PutColorEditor("Header Active", "###ThemeCol11", 5.f, 0.f, reinterpret_cast<float*>(&HeaderActive));
 						PutColorEditor("Header Hovered", "###ThemeCol12", 5.f, 0.f, reinterpret_cast<float*>(&HeaderHovered));
 						PutColorEditor("Scrollbar Bg", "###ThemeCol13", 5.f, 0.f, reinterpret_cast<float*>(&ScrollBg));
-						PutColorEditor("Window Bg", "###ThemeCol14", 5.f, 0.f, reinterpret_cast<float*>(&windowBgColor));
+						PutColorEditor("Separator", "###ThemeCol14", 5.f, 0.f, reinterpret_cast<float*>(&Separator));
+						PutColorEditor("Window Bg", "###ThemeCol15", 5.f, 0.f, reinterpret_cast<float*>(&windowBgColor));
 
 						// Update Color
 						ImGui::GetStyle().Colors[ImGuiCol_Border] = borderColor;
@@ -495,11 +699,32 @@ namespace GUI
 						ImGui::GetStyle().Colors[ImGuiCol_HeaderActive] = HeaderActive;
 						ImGui::GetStyle().Colors[ImGuiCol_HeaderHovered] = HeaderHovered;
 						ImGui::GetStyle().Colors[ImGuiCol_ScrollbarBg] = ScrollBg;
+
+						ImGui::GetStyle().Colors[ImGuiCol_TextDisabled] = FeatureName;
+						ImGui::GetStyle().Colors[ImGuiCol_Text] = Text;
+						ImGui::GetStyle().Colors[ImGuiCol_Separator] = Separator;
 					}
 
 					ImGui::NewLine();
-					PutSwitch(Lang::ReadMeText.DiscordButton, 5.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::mother);
-					PutSwitch(Lang::ReadMeText.SourceButton, 5.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::fucker);
+					
+					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5.f);
+					if (ImGui::Button(ICON_FA_COPY " Source Code", { ImGui::GetColumnWidth() - 20.f, 25.f }))
+						Gui.OpenWebpage("https://github.com/CowNowK/AimStar");
+					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5.f);
+					if (ImGui::Button(ICON_FA_COMMENT_DOTS " Join Discord", { ImGui::GetColumnWidth() - 20.f, 25.f }))
+						Gui.OpenWebpage("https://discord.com/invite/VgRrxwesPz");
+
+					if (MenuConfig::Country == "CN")
+					{
+						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5.f);
+						if (ImGui::Button(ICON_FA_COMMENT_DOTS " QQ Group", { ImGui::GetColumnWidth() - 20.f, 25.f }))
+							Gui.OpenWebpage("https://qm.qq.com/cgi-bin/qm/qr?k=bdYSbTfM9OBycOQw3PrEkRm9B_-s3cLj&jump_from=webapi&authKey=losu+2q8xDQCrHR00oG7vU2q8Bmc+PNFxZhWwODUULf4I0c6K+/uIXSya3Vmk/XA");
+					}
+					ImGui::NewLine();
+					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetColumnWidth() / 4);
+					if (ImGui::Button("Safe Exit", { 125.f, 25.f }))
+						Init::Client::Exit();
+
 
 					ImGui::Columns(1);
 				}
@@ -509,9 +734,18 @@ namespace GUI
 					ImGui::Columns(2, nullptr, false);
 					ConfigMenu::RenderCFGmenu();
 
+					int FPS = 1200;
+					ImGui::NextColumn();
+					ImGui::SetCursorPosY(24.f);
+					ImGui::SeparatorText("Cheat Settings");
+					PutSwitch(Lang::ConfigText.SafeMode, 5.f, ImGui::GetFrameHeight() * 1.7, &MenuConfig::SafeMode, false, nullptr, nullptr, Lang::ConfigText.SafeModeHoveredTip);
+					PutSliderInt(Lang::ConfigText.fpsCap, 5.f, &MenuConfig::MaxRenderFPS, &MenuConfig::MaxFrameRate, &FPS, "%d");
+
 					ImGui::Columns(1);
 				}
 			} ImGui::EndChild();
 		} ImGui::End();
+
+		LoadDefaultConfig();
 	}
 }

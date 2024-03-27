@@ -1,8 +1,28 @@
-﻿#pragma once
+﻿#define _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
+#pragma once
 #include "..\Font\IconsFontAwesome5.h"
+#include <iostream>
+#include <string>
+#include <windows.h>
 
 namespace Lang
 {
+	inline static void GetCountry(std::string& Country)
+	{
+		LCID lcid = GetUserDefaultLCID();
+		wchar_t CountryW[256];
+		GetUserDefaultGeoName(CountryW, sizeof(CountryW) / sizeof(CountryW[0]));
+
+		int len = WideCharToMultiByte(CP_UTF8, 0, CountryW, -1, nullptr, 0, nullptr, nullptr);
+		char* String = new char[len];
+		WideCharToMultiByte(CP_UTF8, 0, CountryW, -1, String, len, nullptr, nullptr);
+		std::string utf8String(String);
+		Country = String;
+
+		delete[] String;
+		return;
+	}
+	
 	inline struct Global
 	{
 		inline static const char* Date;
@@ -44,6 +64,7 @@ namespace Lang
 		inline static const char* ScopedESP;
 		inline static const char* ShowArmorBar;
 		inline static const char* ArmorNum;
+		inline static const char* RenderDistance;
 
 		inline static const char* BoxType_Normal;
 		inline static const char* BoxType_Edge;
@@ -67,18 +88,29 @@ namespace Lang
 		inline static const char* VisCheck;
 		inline static const char* JumpCheck;
 		inline static const char* FovSlider;
+		inline static const char* FovMinSlider;
 		inline static const char* SmoothSlider;
 		inline static const char* BoneList;
 		inline static const char* Tip;
 		inline static const char* ScopeOnly;
 		inline static const char* AimLock;
 		inline static const char* AutoShot;
+		inline static const char* BulletSlider;
+		inline static const char* IgnoreFlash;
+		inline static const char* Ragebot;
 
 		inline static const char* Bone_1;
 		inline static const char* Bone_2;
 		inline static const char* Bone_3;
 		inline static const char* Bone_4;
 	} AimbotText;
+
+	inline struct RCStext
+	{
+		inline static const char* Toggle;
+		inline static const char* Yaw;
+		inline static const char* Pitch;
+	} RCStext;
 
 	inline struct RadarText
 	{
@@ -103,6 +135,7 @@ namespace Lang
 		inline static const char* FeatureName;
 		inline static const char* HotKeyList;
 		inline static const char* Toggle;
+		inline static const char* ScopeOnly;
 		inline static const char* DelaySlider;
 		inline static const char* FakeShotSlider;
 	} TriggerText;
@@ -154,6 +187,8 @@ namespace Lang
 		inline static const char* fovchanger;
 		inline static const char* ForceScope;
 		inline static const char* FlashImmunity;
+		inline static const char* NightMode;
+		inline static const char* Alpha;
 		
 		inline static const char* FakeDuck;
 
@@ -175,6 +210,10 @@ namespace Lang
 		inline static const char* MyConfigs;
 		inline static const char* AuthorName;
 		inline static const char* ConfigName;
+
+		inline static const char* SafeMode;
+		inline static const char* fpsCap;
+		inline static const char* SafeModeHoveredTip;
 	} ConfigText;
 
 	inline struct ReadMeText
@@ -185,8 +224,6 @@ namespace Lang
 		inline static const char* DiscordButton;
 		inline static const char* OffsetsTitle;
 	} ReadMeText;
-
-	void ChangeLang(int LangIndex);
 
 	inline void English()
 	{
@@ -227,6 +264,7 @@ namespace Lang
 		ESPtext.ScopedESP = u8"Show Scoped";
 		ESPtext.ShowArmorBar = u8"Armor Bar";
 		ESPtext.ArmorNum = u8"Armor Number";
+		ESPtext.RenderDistance = u8"Maximum Render Distance: ";
 
 		ESPtext.BoxType_Normal = u8"Normal";
 		ESPtext.BoxType_Edge = u8"Dynamic";
@@ -244,12 +282,21 @@ namespace Lang
 		AimbotText.VisCheck = u8"Visible Only";
 		AimbotText.JumpCheck = u8"On Ground Only";
 		AimbotText.FovSlider = u8"FOV: ";
+		AimbotText.FovMinSlider = u8"MinFOV: ";
 		AimbotText.SmoothSlider = u8"Smooth: ";
-		AimbotText.BoneList = u8"Bone       ";
+		AimbotText.BoneList = u8"Hitbox";
 		AimbotText.Tip = u8"Aimbot will not work while the menu is opened";
 		AimbotText.ScopeOnly = u8"Scope Only";
 		AimbotText.AimLock = u8"Aim Lock";
 		AimbotText.AutoShot = u8"Auto Shot";
+		AimbotText.BulletSlider = u8"Start Bullet: ";
+		AimbotText.IgnoreFlash = u8"Ignore Flash";
+		AimbotText.Ragebot = u8"Ragebot";
+
+		// RCS
+		RCStext.Toggle = u8"Recoil Control";
+		RCStext.Yaw = u8"Yaw: ";
+		RCStext.Pitch = u8"Pitch: ";
 
 		// Radar
 		RadarText.Toggle = u8"Show Radar";
@@ -267,6 +314,7 @@ namespace Lang
 		TriggerText.FeatureName = u8" Triggerbot";
 		TriggerText.HotKeyList = u8"Hotkey   ";
 		TriggerText.Toggle = u8"Always Active";
+		TriggerText.ScopeOnly = u8"Scope Only";
 		TriggerText.DelaySlider = u8"Shot Delay:";
 		TriggerText.FakeShotSlider = u8"Shot Duration:";
 
@@ -297,17 +345,17 @@ namespace Lang
 		MiscText.SpecCheck = u8"Cheat in Spec";
 		MiscText.NoFlash = u8"No Flash";
 		MiscText.FastStop = u8"Fast Stop";
-		MiscText.HitSound = u8"Hit Sound";
+		MiscText.HitSound = u8"Hit Sound  ";
 		MiscText.bmbTimer = u8"Bomb Timer";
 		MiscText.SpecList = u8"Spec List";
-		MiscText.Bhop = u8"Bunny Hop";
+		MiscText.Bhop = u8"Auto Jump";
 		MiscText.Watermark = u8"Watermark";
 		MiscText.CheatList = u8"Cheat List";
 		MiscText.TeamCheck = u8"Team Check";
 		MiscText.AntiRecord = u8"Anti Record";
 		MiscText.MoneyService = u8"Money Services";
 		MiscText.ShowCashSpent = u8"Show Cash Spent";
-		MiscText.EnemySensor = u8"Enemy Sensor";
+		MiscText.EnemySensor = u8"Glow";
 		MiscText.RadarHack = u8"Radar Hack";
 		MiscText.FastStop = u8"Fast Stop";
 		MiscText.VisCheckDisable = u8"Visible Check DISABLED";
@@ -316,23 +364,29 @@ namespace Lang
 		MiscText.fovchanger = u8"Fov Changer: ";
 		MiscText.ForceScope = u8"Force Scope";
 		MiscText.FlashImmunity = u8"Flash Immunity: ";
+		MiscText.NightMode = u8"Night Mode";
+		MiscText.Alpha = u8"Alpha: ";
 
 		MiscText.FakeDuck = u8"Fake Duck";
 
 		MiscText.LanguageList = u8"Language";
 
 		// Config Menu
-		ConfigText.FeatureName = u8"Config";
+		ConfigText.FeatureName = u8"Config Loader";
 		ConfigText.MyConfigs = u8"Config List";
 		ConfigText.Load = u8"Load Selected";
 		ConfigText.Save = u8"Save Selected";
 		ConfigText.Delete = u8"Delete Selected";
 		ConfigText.Reset = u8"Reset Config";
-		ConfigText.Create = u8"Create Config";
+		ConfigText.Create = u8"Create";
 		ConfigText.OpenFolder = u8"Open Folder";
-		ConfigText.SeparateLine = u8"New Config";
+		ConfigText.SeparateLine = u8"Create Config";
 		ConfigText.AuthorName = u8"Author Name";
 		ConfigText.ConfigName = u8"Config Name";
+
+		ConfigText.SafeMode = u8"Safe Mode";
+		ConfigText.fpsCap = u8"Frame Limit: ";
+		ConfigText.SafeModeHoveredTip = u8"Disable all unsafe functions that modify game's memory";
 
 		// Readme Menu
 		ReadMeText.FeatureName = u8" README";

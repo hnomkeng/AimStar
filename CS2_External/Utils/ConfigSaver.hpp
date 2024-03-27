@@ -1,14 +1,20 @@
 #pragma once
 
 #include "..\Utils\yaml-cpp\yaml.h"
+#include "..\OS-ImGui\imgui\imgui.h"
 #include <string>
 
 namespace MyConfigSaver {
     extern void SaveConfig(const std::string& filename, const std::string& author = "");
     extern void LoadConfig(const std::string& filename);
 
-    /*
-    extern uint32_t ImColorToUInt32(const ImColor& color)
+    template <typename T>
+    static T ReadData(const YAML::Node& node, T defaultValue)
+    {
+        return node.IsDefined() ? node.as<T>() : defaultValue;
+    }
+    
+    static uint32_t ImColorToUInt32(const ImColor& color)
     {
         uint32_t r = static_cast<uint32_t>(color.Value.x * 255);
         uint32_t g = static_cast<uint32_t>(color.Value.y * 255) << 8;
@@ -18,13 +24,24 @@ namespace MyConfigSaver {
         return r | g | b | a;
     }
 
-    extern void UInt32ToImColor(uint32_t value, float& r, float& g, float& b, float& a)
+    static ImColor UInt32ToImColor(uint32_t value)
     {
-        r = static_cast<float>(value & 0xFF) / 255.0f;
-        g = static_cast<float>((value >> 8) & 0xFF) / 255.0f;
-        b = static_cast<float>((value >> 16) & 0xFF) / 255.0f;
-        a = static_cast<float>((value >> 24) & 0xFF) / 255.0f;
-        return;
+        ImColor TempColor;
+        TempColor.Value.x = static_cast<float>(value & 0xFF) / 255.0f;
+        TempColor.Value.y = static_cast<float>((value >> 8) & 0xFF) / 255.0f;
+        TempColor.Value.z = static_cast<float>((value >> 16) & 0xFF) / 255.0f;
+        TempColor.Value.w = static_cast<float>((value >> 24) & 0xFF) / 255.0f;
+        return TempColor;
     }
-    */
+    
+    static std::vector<int> ReadVectorFromYAML(const YAML::Node& node) {
+        std::vector<int> result;
+
+        if (node.IsDefined() && node.IsSequence()) {
+            for (const auto& i : node) {
+                result.push_back(i.as<int>());
+            }
+        }
+        return result;
+    }
 }

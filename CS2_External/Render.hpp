@@ -65,7 +65,9 @@ namespace Render
 
 		Vec2 CenterPoint = Gui.Window.Size / 2;
 		float Radius = tan(AimControl::AimFov / 180.f * M_PI / 2.f) / tan(LocalEntity.Pawn.Fov / 180.f * M_PI / 2.f) * Gui.Window.Size.x;
+		float MinRadius = tan(AimControl::AimFovMin / 180.f * M_PI / 2.f) / tan(LocalEntity.Pawn.Fov / 180.f * M_PI / 2.f) * Gui.Window.Size.x;
 		Gui.Circle(CenterPoint, Radius, MenuConfig::FovCircleColor, 1);
+		Gui.Circle(CenterPoint, MinRadius, MenuConfig::FovCircleColor, 1);
 	}
 
 	void DrawCrossHair(ImDrawList* drawList, const ImVec2& pos, ImU32 color) noexcept
@@ -360,7 +362,7 @@ namespace Render
 		ImColor AmmoColor = ImColor(255, 255, 0, 255);
 
 		ImColor ArmorColor = ImColor(0, 128, 255, 255);
-		ImColor ArmorWithHelmetColor = ImColor(0, 255, 0, 255);
+		ImColor ArmorWithHelmetColor = ImColor(255, 0, 255, 255);
 	};
 
 	void HealthBar::HealthBarV(float MaxHealth, float CurrentHealth, ImVec2 Pos, ImVec2 Size, bool ShowNum)

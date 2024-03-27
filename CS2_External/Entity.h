@@ -3,6 +3,7 @@
 #include "View.hpp"
 #include "Bone.h"
 #include "Utils/Globals.hpp"
+#include <map>
 
 struct C_UTL_VECTOR
 {
@@ -47,6 +48,7 @@ public:
 	Vec3 Pos;
 	Vec2 ScreenPos;
 	Vec3 CameraPos;
+	float Speed;
 	std::string WeaponName;
 	DWORD ShotsFired;
 	Vec2 AimPunchAngle;
@@ -59,6 +61,8 @@ public:
 	int Fov;
 	DWORD64 bSpottedByMask;
 	int fFlags;
+	float FlashDuration;
+	bool isDefusing;
 
 public:
 	bool GetPos();
@@ -76,10 +80,22 @@ public:
 	bool GetAmmo();
 	bool GetMaxAmmo();
 	bool GetArmor();
+	bool GetDefusing();
+	bool GetFlashDuration();
+	bool GetVelocity();
 
 	constexpr bool HasFlag(const Flags Flag) const noexcept {
 		return fFlags & (int)Flag;
 	}
+};
+
+class Client
+{
+public:
+	float Sensitivity;
+
+public:
+	bool GetSensitivity();
 };
 
 class CEntity
@@ -87,15 +103,21 @@ class CEntity
 public:
 	PlayerController Controller;
 	PlayerPawn Pawn;
+	Client Client;
 public:
 	// 更新数据
 	bool UpdateController(const DWORD64& PlayerControllerAddress);
 	bool UpdatePawn(const DWORD64& PlayerPawnAddress);
-	bool UpdateServerPawn(const DWORD64& PlayerPawnAddress);
+	bool UpdateClientData();
 	// 是否存活
 	bool IsAlive();
 	// 是否在屏幕内
 	bool IsInScreen();
 	// 获取骨骼数据
 	CBone GetBone() const;
+
+public:
+	static std::map<int, std::string> weaponNames;
+
+	static std::string GetWeaponName(int weaponID);
 };

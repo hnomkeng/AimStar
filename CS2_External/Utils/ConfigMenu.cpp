@@ -2,7 +2,7 @@
 #include "../MenuConfig.hpp"
 #include "ConfigSaver.hpp"
 #include "../TriggerBot.h"
-#include "../AimBot.hpp"
+#include "../Features/Aimbot/Legitbot.hpp"
 #include <filesystem>
 #include <string>
 #include "../Font/IconsFontAwesome5.h"
@@ -49,6 +49,7 @@ namespace ConfigMenu {
 		if (ImGui::Button(Lang::ConfigText.Load, { 126.f, 30.f }) && selectedConfig >= 0 && selectedConfig < configFiles.size())
 		{
 			std::string selectedConfigFile = configFiles[selectedConfig];
+			std::cout << selectedConfigFile << std::endl;
 			MyConfigSaver::LoadConfig(selectedConfigFile);
 		}
 		ImGui::SameLine();
@@ -97,24 +98,28 @@ namespace ConfigMenu {
 			}
 			ImGui::EndPopup();
 		}
-		ImGui::NextColumn();
-		ImGui::SetCursorPosY(24.f);
-		ImGui::SeparatorText(Lang::ConfigText.SeparateLine);
-		ImGui::TextDisabled(Lang::ConfigText.AuthorName);
-		ImGui::SetNextItemWidth(ComponentWidth + 10);
-		ImGui::InputText("###ConfigNameInput", configAuthorBuffer, sizeof(configAuthorBuffer));
-		ImGui::TextDisabled(Lang::ConfigText.ConfigName);
-		ImGui::SetNextItemWidth(ComponentWidth + 10);
-		ImGui::InputText("###AuthorNameInput", configNameBuffer, sizeof(configNameBuffer));
+
 		ImGui::NewLine();
-		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetColumnWidth() / 4);
+		ImGui::SetCursorPosX(CurrentCursorX + CursorX);
+		ImGui::SeparatorText(Lang::ConfigText.SeparateLine);
+		ImGui::SetCursorPosX(CurrentCursorX + CursorX);
+		ImGui::TextDisabled(Lang::ConfigText.AuthorName);
+		ImGui::SetCursorPosX(CurrentCursorX + CursorX);
+		ImGui::SetNextItemWidth(ComponentWidth + 8);
+		ImGui::InputText("###ConfigNameInput", configNameBuffer, sizeof(configNameBuffer));
+		ImGui::SetCursorPosX(CurrentCursorX + CursorX);
+		ImGui::TextDisabled(Lang::ConfigText.ConfigName);
+		ImGui::SetCursorPosX(CurrentCursorX + CursorX);
+		ImGui::SetNextItemWidth(ComponentWidth + 8);
+		ImGui::InputText("###AuthorNameInput", configAuthorBuffer, sizeof(configAuthorBuffer));
+		ImGui::NewLine();
+		ImGui::SetCursorPosX(CurrentCursorX + CursorX);
 		if (ImGui::Button(Lang::ConfigText.Create, { 126.f, 30.f }))
 		{
 			std::string configFileName = std::string(configNameBuffer) + ".yml";
 			MyConfigSaver::SaveConfig(configFileName, std::string(configAuthorBuffer));
 		}
-		ImGui::NewLine();
-		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetColumnWidth() / 4);
+		ImGui::SameLine();
 		if (ImGui::Button(Lang::ConfigText.OpenFolder, { 126.f, 30.f }))
 		{
 			Gui.OpenWebpage(configDir.c_str());
@@ -122,8 +127,16 @@ namespace ConfigMenu {
 	}
 
 	void ResetToDefault() {
+		TriggerBot::IgnoreFlash = false;
+		TriggerBot::ScopeOnly = false;
+		AimControl::Rage = false;
+		AimControl::IgnoreFlash = false;
+		AimControl::AimLock = false;
+		ESPConfig::RenderDistance = 80;
 		ESPConfig::ArmorBar = false;
 		ESPConfig::ShowArmorNum = false;
+		MiscCFG::NightModeAlpha = 0;
+		MiscCFG::NightMode = false;
 		MiscCFG::FlashImmunity = 0.f;
 		MiscCFG::SmokeColored = false;
 		MiscCFG::SmokeColor = ImColor(255, 0, 0, 255);
@@ -165,7 +178,6 @@ namespace ConfigMenu {
 		ESPConfig::ShowPlayerName = true;
 		ESPConfig::BoxRounding = 0.0f;
 		MenuConfig::AimBot = false;
-		MenuConfig::AimAlways = false;
 		MenuConfig::AimToggleMode = false;
 		MenuConfig::AimPosition = 0;
 		MenuConfig::AimPositionIndex = BONEINDEX::head;
@@ -199,7 +211,7 @@ namespace ConfigMenu {
 		RCS::RCSBullet = 1;
 		MenuConfig::TriggerHotKey = 0;
 		TriggerBot::SetHotKey(MenuConfig::TriggerHotKey);
-		AimControl::RCSScale = ImVec2(1.2f, 1.4f);
+		RCS::RCSScale = ImVec2(1.2f, 1.4f);
 		AimControl::ScopeOnly = false;
 		AimControl::AutoShot = false;
 		MenuConfig::FovLineColor = ImVec4(55, 55, 55, 220);
@@ -226,7 +238,7 @@ namespace ConfigMenu {
 		MiscCFG::WorkInSpec = true;
 		MiscCFG::WaterMark = false;
 		MiscCFG::CheatList = false;
-		MiscCFG::HitSound = false;
+		MiscCFG::HitSound = 0;
 		MiscCFG::FastStop = false;
 
 		ESPConfig::ESPenabled = false;
@@ -238,5 +250,7 @@ namespace ConfigMenu {
 
 		ESPConfig::DrawFov = false;
 		MenuConfig::FovCircleColor = ImColor(255, 255, 255, 255);
+
+		MenuConfig::MaxRenderFPS = 1200;
 	}
 }

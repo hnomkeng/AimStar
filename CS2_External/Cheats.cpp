@@ -7,6 +7,8 @@
 #include "Render.hpp"
 #include "MenuConfig.hpp"
 
+#include "Utils/Initial/Init.h"
+
 #include "Features/ESP.h"
 #include "Features/GUI.h"
 #include "Features/RCS.H"
@@ -91,7 +93,12 @@ void Cheats::Run()
 	{
 		GUI::NewGui();
 	}
-		
+
+	if (!Init::Client::isGameWindowActive() && !MenuConfig::ShowMenu)
+		return;
+
+	// The overlay should be rendered at the bottom
+	Misc::NightMode();
 
 	// Update matrix
 	if(!ProcessMgr.ReadMemory(gGame.GetMatrixAddress(), gGame.View.Matrix,64))
@@ -111,6 +118,7 @@ void Cheats::Run()
 	// LocalEntity
 	CEntity LocalEntity, ServerEntity;
 	static int LocalPlayerControllerIndex = 1;
+	LocalEntity.UpdateClientData();
 	if (!LocalEntity.UpdateController(LocalControllerAddress))
 		return;
 	if (!LocalEntity.UpdatePawn(LocalPawnAddress) && !MiscCFG::WorkInSpec)
@@ -123,8 +131,8 @@ void Cheats::Run()
 	float DistanceToSight = 0;
 	float MaxAimDistance = 100000;
 	Vec3  HeadPos{ 0,0,0 };
-	Vec3  AimPos{ 0,0,0 };
 	Vec2  Angles{ 0,0 };
+	std::vector<Vec3> AimPosList;
 
 	// Radar Data
 	Base_Radar Radar;
@@ -202,64 +210,75 @@ void Cheats::Run()
 				Gui.Text(std::to_string(BoneIndex), ScreenPos, ImColor(255, 255, 255, 255));
 			}
 		}*/
-		DistanceToSight = Entity.GetBone().BonePosList[BONEINDEX::head].ScreenPos.DistanceTo({ Gui.Window.Size.x / 2,Gui.Window.Size.y / 2 });
 
-
-		if (DistanceToSight < MaxAimDistance)
+		//update Bone select
+		if (AimControl::HitboxList.size() != 0)
 		{
-			MaxAimDistance = DistanceToSight;
-
-			if (!MenuConfig::VisibleCheck ||
-				Entity.Pawn.bSpottedByMask & (DWORD64(1) << (LocalPlayerControllerIndex)) ||
-				LocalEntity.Pawn.bSpottedByMask & (DWORD64(1) << (i)))
+			for (int i = 0; i < AimControl::HitboxList.size(); i++)
 			{
-				AimPos = Entity.GetBone().BonePosList[MenuConfig::AimPositionIndex].Pos;
-				if (MenuConfig::AimPositionIndex == BONEINDEX::head)
-					AimPos.z -= 1.f;
+				Vec3 TempPos;
+				DistanceToSight = Entity.GetBone().BonePosList[AimControl::HitboxList[i]].ScreenPos.DistanceTo({ Gui.Window.Size.x / 2,Gui.Window.Size.y / 2 });
+
+				if (DistanceToSight < MaxAimDistance)
+				{
+					MaxAimDistance = DistanceToSight;
+
+					if (!MenuConfig::VisibleCheck ||
+						Entity.Pawn.bSpottedByMask & (DWORD64(1) << (LocalPlayerControllerIndex)) ||
+						LocalEntity.Pawn.bSpottedByMask & (DWORD64(1) << (i)))
+					{
+						TempPos = Entity.GetBone().BonePosList[AimControl::HitboxList[i]].Pos;
+						if (AimControl::HitboxList[i] == BONEINDEX::head)
+							TempPos.z -= 1.f;
+
+						AimPosList.push_back(TempPos);
+					}
+				}
 			}
 		}
 
 		if (ESPConfig::ESPenabled)
 		{
 			ImVec4 Rect = ESP::GetBoxRect(Entity, MenuConfig::BoxType);
-			ESP::RenderPlayerESP(LocalEntity, Entity, Rect, LocalPlayerControllerIndex, i);
-			
-				
-			// Draw HealthBar
-			if (ESPConfig::ShowHealthBar)
-			{
-				ImVec2 HealthBarPos = { Rect.x - 6.f,Rect.y };
-				ImVec2 HealthBarSize = { 4 ,Rect.w };
-				Render::DrawHealthBar(EntityAddress, 100, Entity.Pawn.Health, HealthBarPos, HealthBarSize);
-			}
+			int distance = static_cast<int>(Entity.Pawn.Pos.DistanceTo(LocalEntity.Pawn.Pos) / 100);
 
-			// Draw Ammo
-			// When player is using knife or nade, Ammo = -1.
-			if (ESPConfig::AmmoBar && Entity.Pawn.Ammo != -1)
+			if (ESPConfig::RenderDistance == 0 || (distance <= ESPConfig::RenderDistance && ESPConfig::RenderDistance > 0))
 			{
-				ImVec2 AmmoBarPos = { Rect.x, Rect.y + Rect.w + 2 };
-				ImVec2 AmmoBarSize = { Rect.z,4 };
-				Render::DrawAmmoBar(EntityAddress, Entity.Pawn.MaxAmmo, Entity.Pawn.Ammo, AmmoBarPos, AmmoBarSize);
-			}
+				ESP::RenderPlayerESP(LocalEntity, Entity, Rect, LocalPlayerControllerIndex, i);
+				Render::DrawDistance(LocalEntity, Entity, Rect);
 
-			// Draw Armor
-			// It is meaningless to render a empty bar
-			if (ESPConfig::ArmorBar && Entity.Pawn.Armor > 0)
-			{
-				bool HasHelmet;
-				ImVec2 ArmorBarPos;
-				ProcessMgr.ReadMemory(Entity.Controller.Address + Offset::PlayerController.HasHelmet, HasHelmet);
+				// Draw HealthBar
 				if (ESPConfig::ShowHealthBar)
-					ArmorBarPos = { Rect.x - 10.f,Rect.y };
-				else
-					ArmorBarPos = { Rect.x - 6.f,Rect.y };
-				ImVec2 ArmorBarSize = { 4.f,Rect.w };
-				Render::DrawArmorBar(EntityAddress, 100, Entity.Pawn.Armor, HasHelmet, ArmorBarPos, ArmorBarSize);
+				{
+					ImVec2 HealthBarPos = { Rect.x - 6.f,Rect.y };
+					ImVec2 HealthBarSize = { 4 ,Rect.w };
+					Render::DrawHealthBar(EntityAddress, 100, Entity.Pawn.Health, HealthBarPos, HealthBarSize);
+				}
+
+				// Draw Ammo
+				// When player is using knife or nade, Ammo = -1.
+				if (ESPConfig::AmmoBar && Entity.Pawn.Ammo != -1)
+				{
+					ImVec2 AmmoBarPos = { Rect.x, Rect.y + Rect.w + 2 };
+					ImVec2 AmmoBarSize = { Rect.z,4 };
+					Render::DrawAmmoBar(EntityAddress, Entity.Pawn.MaxAmmo, Entity.Pawn.Ammo, AmmoBarPos, AmmoBarSize);
+				}
+
+				// Draw Armor
+				// It is meaningless to render a empty bar
+				if (ESPConfig::ArmorBar && Entity.Pawn.Armor > 0)
+				{
+					bool HasHelmet;
+					ImVec2 ArmorBarPos;
+					ProcessMgr.ReadMemory(Entity.Controller.Address + Offset::PlayerController.HasHelmet, HasHelmet);
+					if (ESPConfig::ShowHealthBar)
+						ArmorBarPos = { Rect.x - 10.f,Rect.y };
+					else
+						ArmorBarPos = { Rect.x - 6.f,Rect.y };
+					ImVec2 ArmorBarSize = { 4.f,Rect.w };
+					Render::DrawArmorBar(EntityAddress, 100, Entity.Pawn.Armor, HasHelmet, ArmorBarPos, ArmorBarSize);
+				}
 			}
-
-
-			// Draw Distance
-			Render::DrawDistance(LocalEntity, Entity, Rect);
 		}
 		Glow::Run(Entity);
 		// SpecList::GetSpectatorList(Entity, LocalEntity, EntityAddress);
@@ -281,11 +300,12 @@ void Cheats::Run()
 	Misc::FastStop();
 	Misc::NadeManager(gGame);
 	Misc::FovChanger(LocalEntity);
-	Misc::Watermark();
+	Misc::Watermark(LocalEntity);
 	Misc::FakeDuck(LocalEntity);
 	Misc::BunnyHop(LocalEntity);
 	Misc::CheatList();
 	Misc::ForceScope(LocalEntity);
+
 
 	// Fov line
 	Render::DrawFov(LocalEntity, MenuConfig::FovLineSize, MenuConfig::FovLineColor, 1);
@@ -299,38 +319,33 @@ void Cheats::Run()
 	RenderCrossHair(ImGui::GetBackgroundDrawList());
 
 	bmb::RenderWindow();
-
+	
 	// Aimbot
-	if (MenuConfig::AimBot)
-	{
+	if (MenuConfig::AimBot) {
 		Render::DrawFovCircle(LocalEntity);
 
-		if (MenuConfig::AimAlways)
-		{
-			if (AimPos != Vec3(0, 0, 0))
-			{
-				AimControl::AimBot(LocalEntity, LocalEntity.Pawn.CameraPos, AimPos);
-			}
-		}
-		else
-		{
-			if (GetAsyncKeyState(AimControl::HotKey))
-			{
-				if (AimPos != Vec3(0, 0, 0))
-				{
-					AimControl::AimBot(LocalEntity, LocalEntity.Pawn.CameraPos, AimPos);
-				}
+		if (MenuConfig::AimAlways || GetAsyncKeyState(AimControl::HotKey)) {
+			if (AimPosList.size() != 0) {
+				if (AimControl::Rage && !MenuConfig::SafeMode)
+					AimControl::Ragebot(LocalEntity, LocalEntity.Pawn.CameraPos, AimPosList);
+				else
+					AimControl::AimBot(LocalEntity, LocalEntity.Pawn.CameraPos, AimPosList);
 			}
 		}
 
-		if (MenuConfig::AimToggleMode && (GetAsyncKeyState(AimControl::HotKey) & 0x8000) && currentTick - lastTick >= 200)
-		{
+		if (MenuConfig::AimToggleMode && (GetAsyncKeyState(AimControl::HotKey) & 0x8000) && currentTick - lastTick >= 200) {
 			AimControl::switchToggle();
 			lastTick = currentTick;
 		}
 	}
+	else {
+		RCS::RecoilControl(LocalEntity);
+	}
 
-	Misc::JoinDiscord();
-	Misc::SourceCode();
-		
+	int currentFPS = static_cast<int>(ImGui::GetIO().Framerate);
+	if (currentFPS > MenuConfig::MaxRenderFPS)
+	{
+		int FrameWait = round(1000.0 / MenuConfig::MaxRenderFPS);
+		std::this_thread::sleep_for(std::chrono::milliseconds(FrameWait));
+	}
 }

@@ -1,9 +1,11 @@
 #pragma once
+#define _USE_MATH_DEFINES
 
 #include <algorithm>
 #include <chrono>
 #include <cstdlib>
 #include <ctime>
+#include <math.h>
 #include <sstream>
 #include <string>
 #include <thread>
@@ -11,7 +13,8 @@
 #include <vector>
 #include <Windows.h>
 
-#include "..\AimBot.hpp"
+#include "Aimbot\Legitbot.hpp"
+#include "..\Resources\Sounds.h"
 #include "..\Entity.h"
 #include "..\MenuConfig.hpp"
 #include "..\OS-ImGui\imgui\imgui.h"
@@ -21,7 +24,7 @@
 
 namespace Misc
 {
-	inline bool Zoom;
+	inline bool Zoom = false;
 
 	static inline std::vector<ImColor> colorList = {
 		ImColor(255, 0, 0),     // Red
@@ -94,7 +97,7 @@ namespace Misc
 		return hasFlagDucking;
 	}
 
-	void Watermark() noexcept;
+	void Watermark(const CEntity& aLocalPlayer) noexcept;
 	void HitSound(const CEntity& aLocalPlayer, int& PreviousTotalHits) noexcept;
 	void FlashImmunity(const CEntity& aLocalPlayer) noexcept;
 	void FastStop() noexcept;
@@ -106,7 +109,5 @@ namespace Misc
 	void BunnyHop(const CEntity& Local) noexcept;
 	void CheatList() noexcept;
 	void ForceScope(const CEntity& aLocalPlayer) noexcept;
-
-	void JoinDiscord() noexcept;
-	void SourceCode() noexcept;
+	void NightMode() noexcept;
 }

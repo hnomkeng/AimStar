@@ -10,24 +10,6 @@ namespace Misc
 	bool wKeyPressed = false;
 	bool sKeyPressed = false;
 
-	void JoinDiscord() noexcept
-	{
-		if (!MiscCFG::mother)
-			return;
-
-		ShellExecuteA(NULL, "open", "https://discord.com/invite/VgRrxwesPz", NULL, NULL, SW_SHOWNORMAL);
-		MiscCFG::mother = !MiscCFG::mother;
-	}
-
-	void SourceCode() noexcept
-	{
-		if (!MiscCFG::fucker)
-			return;
-
-		ShellExecuteA(NULL, "open", "https://github.com/CowNowK/AimStar", NULL, NULL, SW_SHOWNORMAL);
-		MiscCFG::fucker = !MiscCFG::fucker;
-	}
-
 	void CheatList() noexcept
 	{
 		if (!MiscCFG::CheatList)
@@ -51,6 +33,7 @@ namespace Misc
 		CheatText("Fast Stop", MiscCFG::FastStop);
 		if (MiscCFG::FlashImmunity != 0)
 			ImGui::Text("Flash Immunity");
+		CheatText("Force Scope", MiscCFG::ForceScope);
 		if (MiscCFG::Fov != 90)
 			ImGui::Text("Fov Changer");
 		CheatText("Headshot Line", MenuConfig::ShowHeadShootLine);
@@ -67,7 +50,7 @@ namespace Misc
 		ImGui::End();
 	}
 
-	void Watermark() noexcept
+	void Watermark(const CEntity& LocalPlayer) noexcept
 	{
 		if (!MiscCFG::WaterMark)
 			return;
@@ -77,15 +60,33 @@ namespace Misc
 		ImGui::SetNextWindowBgAlpha(0.3f);
 		ImGui::Begin("Watermark", nullptr, windowFlags);
 
+		// Cheat FPS
 		static auto FrameRate = 1.0f;
-		struct tm ptm;
-		//	FrameRate = 0.9f * FrameRate + 0.1f * GV.GetFrameCount();
 		FrameRate = ImGui::GetIO().Framerate;
+
+		// Current Time
+		struct tm ptm;
 		getCurrentTime(&ptm);
 
-		ImGui::Text("AimStar | %d fps | %02d:%02d:%02d",
+		// Player Ping
+		int playerPing;
+		ProcessMgr.ReadMemory(LocalPlayer.Controller.Address + 0x718, playerPing);
+
+		// Player Pos
+		Vec3 Pos = LocalPlayer.Pawn.Pos;
+
+		// Player Angle
+		Vec2 Angle = LocalPlayer.Pawn.ViewAngle;
+
+		ImGui::Text("AimStar");
+		ImGui::Text("%d FPS | %d ms | %02d:%02d:%02d",
 			FrameRate != 0.0f ? static_cast<int>(FrameRate) : 0,
+			playerPing,
 			ptm.tm_hour, ptm.tm_min, ptm.tm_sec);
+		ImGui::Text("Pos: %.2f, %.2f, %.2f", Pos.x, Pos.y, Pos.z);
+		ImGui::Text("Angel: %.2f, %.2f", Angle.x, Angle.y);
+		ImGui::Text("Vel: %.2f", LocalPlayer.Pawn.Speed);
+
 		ImGui::End();
 	}
 
@@ -93,9 +94,6 @@ namespace Misc
 	{
 		if (!MiscCFG::HitSound)
 			return;
-
-		std::string soundDir = MenuConfig::SoundPath + "\\Hit.wav";
-		std::wstring sound = Misc::STR2LPCWSTR(soundDir);
 
 		uintptr_t pBulletServices;
 		int totalHits;
@@ -110,7 +108,24 @@ namespace Misc
 			else
 			{
 				// Play the HitSound
-				PlaySoundW(sound.c_str(), NULL, SND_FILENAME | SND_ASYNC);
+				switch (MiscCFG::HitSound)
+				{
+				case 1:
+					PlaySoundA(reinterpret_cast<char*>(neverlose_sound), NULL, SND_ASYNC | SND_MEMORY);
+					break;
+				case 2:
+					PlaySoundA(reinterpret_cast<char*>(skeet_sound), NULL, SND_ASYNC | SND_MEMORY);
+					break;
+				case 3:
+					PlaySoundA(reinterpret_cast<char*>(Fuck), NULL, SND_ASYNC | SND_MEMORY);
+					break;
+				case 4:
+					PlaySoundA(reinterpret_cast<char*>(Senpai), NULL, SND_ASYNC | SND_MEMORY);
+					break;
+				default:
+					break;
+				}
+				
 			}
 		}
 		PreviousTotalHits = totalHits;
@@ -118,6 +133,9 @@ namespace Misc
 
 	void FlashImmunity(const CEntity& aLocalPlayer) noexcept
 	{
+		if (MenuConfig::SafeMode)
+			return;
+
 		float MaxAlpha = 255.f - MiscCFG::FlashImmunity;
 		ProcessMgr.WriteMemory(aLocalPlayer.Pawn.Address + Offset::Pawn.flFlashMaxAlpha, MaxAlpha);
 	}
@@ -141,6 +159,9 @@ namespace Misc
 
 	void NadeManager(CGame Game) noexcept
 	{
+		if (MenuConfig::SafeMode)
+			return;
+
 		std::vector<std::string> EntityNames = {
 		"smokegrenade_projectile", "weapon_glock", "weapon_smokegrenade", "basemodelentity",
 		"c_cs_player_for_precache", "info_particle_system", "prop_dynamic", "post_processing_volume",
@@ -207,6 +228,9 @@ namespace Misc
 
 	void RadarHack(const CEntity& EntityList) noexcept
 	{
+		if (MenuConfig::SafeMode)
+			return;
+
 		if (!MiscCFG::RadarHack)
 			return;
 
@@ -216,6 +240,9 @@ namespace Misc
 
 	void FovChanger(const CEntity& aLocalPlayer) noexcept
 	{
+		if (MenuConfig::SafeMode)
+			return;
+
 		DWORD64 CameraServices = 0;
 		if (Zoom)
 			return;
@@ -285,7 +312,7 @@ namespace Misc
 			// As of the latest update (11/8/2023) bhop doesn't work at all with sendinput,
 			// if +jump is sent on the same tick that you land on the ground, the jump won't register.
 			// But you can add 15ms of delay right before your sendinput to fix this problem temporarily
-			std::this_thread::sleep_for(std::chrono::milliseconds(15));
+			std::this_thread::sleep_for(std::chrono::milliseconds(17));
 			// Refer to -> https://www.unknowncheats.me/forum/counter-strike-2-a/609480-sendinput-bhop-inconsistency.html
 			gGame.SetForceJump(65537);
 		}
@@ -300,19 +327,86 @@ namespace Misc
 		}
 	}
 
+	std::string OldWeaponCache;
 	void ForceScope(const CEntity& aLocalPlayer) noexcept
 	{
+		if (MenuConfig::SafeMode)
+			return;
+
 		if (!MiscCFG::ForceScope)
 			return;
 
-		if (GetAsyncKeyState(VK_RBUTTON) & 0x8000)
+		// When player switching weapon, cancel Scope
+		const std::string PlayerWeapon = aLocalPlayer.Pawn.WeaponName;
+		if (OldWeaponCache != PlayerWeapon)
 		{
-			Zoom = true;
+			Zoom = false;
+			OldWeaponCache = PlayerWeapon;
+		}
+
+		// When players hold these weapons, don't Scope
+		std::vector<std::string> WeaponNames = {
+		"smokegrenade", "flashbang", "hegrenade", "molotov", "decoy", "incgrenade", 
+		"awp", "ssg08", "aug", "sg556", 
+		"knife", "c4"
+		};
+		if (std::find(WeaponNames.begin(), WeaponNames.end(), PlayerWeapon) != WeaponNames.end())
+			return;
+
+		// When player reloading their weapon, cancel Scope
+		DWORD64 WeaponService;
+		bool inReload;
+		ProcessMgr.ReadMemory(aLocalPlayer.Pawn.Address + Offset::Pawn.pClippingWeapon, WeaponService);
+		ProcessMgr.ReadMemory(WeaponService + Offset::WeaponBaseData.inReload, inReload);
+		if (inReload)
+		{
+			Zoom = false;
+		}
+
+		// Avoid scope loop
+		static DWORD lastTick = 0;
+		DWORD currentTick = GetTickCount();
+		if (!MenuConfig::ShowMenu)
+		{
+			if ((GetAsyncKeyState(VK_RBUTTON) & 0x8000) && currentTick - lastTick >= 500)
+			{
+				Zoom = !Zoom;
+				lastTick = currentTick;
+			}
+		}
+
+		if (Zoom)
+		{
 			UINT Scopefov = 45;
 			ProcessMgr.WriteMemory<UINT>(aLocalPlayer.Controller.Address + Offset::Pawn.DesiredFov, Scopefov);
 		}
-		else {
-			Zoom = false;
+			
+	}
+
+	// @Phillip
+	void NightMode() noexcept
+	{
+		if (!MiscCFG::NightMode)
+			return;
+
+		ImGui::SetNextWindowPos({ 0, 0 }, ImGuiCond_Always);
+		ImGui::SetNextWindowSize({ Gui.Window.Size.x, Gui.Window.Size.y }, ImGuiCond_Always);
+		ImGui::SetNextWindowBgAlpha(0.f);
+		ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, 0));
+		ImGui::Begin("##background", nullptr, ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoDecoration);
+
+		ImVec2 windowPos = ImGui::GetWindowPos();
+		ImVec2 windowSize = ImGui::GetWindowSize();
+		ImGui::TextColored(ImColor(255, 255, 255, 200), "Night Mode Overlay");
+
+		if (MiscCFG::NightModeAlpha)
+		{
+			ImGui::GetBackgroundDrawList()->
+				AddRectFilled(windowPos, ImVec2(windowPos.x + windowSize.x, windowPos.y + windowSize.y), IM_COL32(0, 0, 0, MiscCFG::NightModeAlpha));
 		}
+
+		ImGui::End();
+		ImGui::PopStyleColor();
+			
 	}
 }

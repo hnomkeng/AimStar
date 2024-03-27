@@ -14,9 +14,9 @@
 
 ## ❗ Info
 
-**GAME UPDATED, WAITING CHEAT UPDATE**
+[**zxq你妈死了哈哈**](https://github.com/CowNowK/AimStar/blob/main/Guides/Resellers.md)
 
-Free and open-source external cheat for CS2, written in C++.
+Free and open-source external cheat for CS2, written in C++. - Available for Windows8.1+
 
 Discord server: [AimShit Club](https://discord.com/invite/VgRrxwesPz)
 
@@ -34,7 +34,7 @@ Most of the code is contributed by users, and the code structure might be very m
 > I am so busy that I may not update the code on time. If u have the capability to update or fix bugs, u can pull ur request🤩
 ***
 ## 📸 Preview
-![](/Image1.png)
+![](/Image2.png)
 
 ## 📋 Features
 
@@ -90,3 +90,27 @@ Please read the following advice carefully before using Aimstar.
 ## ⭐ Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=CowNowK/AimStar&type=Date)](https://star-history.com/#CowNowK/AimStar&Date)
+
+## 💲 Best Resell
+
+这个拼多多商家已经将免费的AimStar以35元永久的价格售出了10万份
+
+![1f76f67174ee54af569f0ea8dc64963](https://github.com/CowNowK/AimStar/assets/133740174/f032647a-b648-4b9b-986e-3288e22d3d0f)
+<details><summary>圈钱大蛇实名鉴赏</summary>
+  
+- 司晓鹏先生
+
+<img src="https://github.com/CowNowK/AimStar/assets/65479796/38e02274-bf54-471c-ac3e-b52450890424" alt="司晓鹏先生" style="width:315px;height:538ox;">
+<img src="https://github.com/CowNowK/AimStar/assets/65479796/0b0c2907-c956-4b76-bb2e-e25e5a5782af" alt="司晓鹏先生" style="width:315px;height:538ox;">
+
+- 张海先生
+
+<img src="https://github.com/CowNowK/AimStar/assets/65479796/f1832d98-8381-4a1e-bd48-9323d4e0cc0b" alt="张海先生" style="width:315px;height:538ox;">
+<img src="https://github.com/CowNowK/AimStar/assets/65479796/5ca6e6c3-2ad0-4f0e-ab0b-71c828188699" alt="张海先生" style="width:315px;height:538ox;">
+
+- 张国华先生
+
+<img src="https://github.com/CowNowK/AimStar/assets/65479796/ed31b09c-8878-4ab7-8add-0f92a180aa3e" alt="张海先生" style="width:315px;height:538ox;">
+<img src="https://github.com/CowNowK/AimStar/assets/65479796/a16fc131-7db4-40cc-a51a-76dbef9ef2c3" alt="张海先生" style="width:315px;height:538ox;">
+
+</details>

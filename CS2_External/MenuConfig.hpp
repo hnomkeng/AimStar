@@ -6,10 +6,10 @@
 namespace MenuConfig
 {
 	inline std::string path = "";
-	inline std::string SoundPath = "";
-	inline std::string LocalVersion = "3.9";
+	inline std::string LocalVersion = "4.2.2";
 	// Don't change this
 	inline std::string Key = "N5ZF3KG8H6BVQ71T";
+	inline std::string HWID = "";
 
 	struct {
 		// 0: Visual 1: Aimbot 2: Misc 3: Config
@@ -26,8 +26,13 @@ namespace MenuConfig
 		ImColor BorderColor_Purple	= ImColor(255, 0, 238, 255);
 	} WCS;	// Window Component Settings
 
+	inline std::string Country = "";
+	inline int MaxFrameRate = 60;
+	inline bool defaultConfig = false;
 	inline int Language = 0;
 	inline int Theme = 0;
+	inline bool SafeMode = false;
+	inline int MaxRenderFPS = 144;
 
 	inline bool AirJump = false;
 	inline float ComboWidth = 100.f;
@@ -71,6 +76,7 @@ namespace MenuConfig
 
 	inline bool BypassOBS = false;
 	inline bool TargetingCrosshairs = false;
+	inline bool HitboxUpdated = false;
 
 	// Theme Configs
 	inline ImColor ButtonBorderColor = ImColor(255, 204, 0, 255);
@@ -83,6 +89,7 @@ namespace ESPConfig
 	inline bool ShowScoping = false;
 	inline bool ShowBoneESP = true;
 	inline bool ShowBoxESP = true;
+	inline bool winniethepool = false;
 	inline bool ShowHealthBar = true;
 	inline bool ShowWeaponESP = false;
 	inline bool ShowEyeRay = false;
@@ -105,6 +112,7 @@ namespace ESPConfig
 	inline float BoxRounding = RandomPara<float>(0.0f, 3.0f);;
 	inline float BoxAlpha = 0.35f;
 	inline bool ShowLineToEnemy = false;
+	inline int RenderDistance = 0;
 	inline ImColor LineToEnemyColor = ImColor(255, 255, 255, 220);
 	// 0: Top 1: Center 2: Bottom
 	inline int LinePos = 0;
@@ -174,13 +182,10 @@ namespace RadarCFG
 
 namespace MiscCFG
 {
-	inline bool mother = false;
-	inline bool fucker = false;
-
 	inline bool BunnyHop = false;
 	inline bool WorkInSpec = true;
 	inline bool WaterMark = false;
-	inline bool HitSound = false;
+	inline int	HitSound = 0;
 	inline bool SkinChanger = false;
 	inline bool bmbTimer = false;
 	inline bool FastStop = false;
@@ -195,6 +200,8 @@ namespace MiscCFG
 	inline bool FovHacker = false;
 	inline bool CheatList = false;
 	inline bool ForceScope = false;
+	inline bool NightMode = false;
+	inline int NightModeAlpha = 0.f;
 	inline int Fov = 90;
 	inline float FlashImmunity = 0;
 	inline ImColor BombTimerCol = ImColor(255, 120, 0, 255);

@@ -20,6 +20,7 @@ namespace Offset
 	inline DWORD InventoryServices;
 	inline DWORD PlantedC4;
 	inline DWORD InputSystem;
+	inline DWORD Sensitivity;
 	inline DWORD Pointer;
 
 	struct
@@ -39,8 +40,10 @@ namespace Offset
 		DWORD WeaponServices = 0x1100;			// CPlayer_WeaponServices*
 		DWORD BulletServices = 0x1718;			// CCSPlayer_BulletServices*
 		DWORD CameraServices = 0x1138;			// CPlayer_CameraServices*
+		DWORD ViewModelServices = 0x12C8;		// CPlayer_ViewModelServices*
 		DWORD pClippingWeapon = 0x1308;			// C_CSWeaponBase*
 
+		DWORD ViewModel = 0x40;				// CCSPlayer_ViewModelServices::m_hViewModel
 		DWORD StartAccount = 0x1490;
 		DWORD isScoped = 0x1400;
 		DWORD TotalHit = 0x40;
@@ -53,6 +56,7 @@ namespace Offset
 		DWORD vecLastClipCameraPos = 0x12EC;
 		DWORD iShotsFired = 0x147C;
 		DWORD flFlashMaxAlpha = 0x14C8;
+		DWORD flFlashDuration = 0x14CC;
 		DWORD aimPunchAngle = 0x177C;			// C_CSPlayerPawn::m_aimPunchAngle
 		DWORD aimPunchCache = 0x17A0;
 		DWORD iIDEntIndex = 0x15A4;
@@ -60,7 +64,8 @@ namespace Offset
 		DWORD DesiredFov = 0x6CC;
 		DWORD iFovStart = 0x214;
 		DWORD fFlags = 0x3D4;
-		DWORD bSpottedByMask = 0x1698 + 0xC;			// C_CSPlayerPawnBase::entitySpottedState + EntitySpottedState_t::bSpottedByMask
+		DWORD bSpottedByMask = 0x1698 + 0xC;	// C_CSPlayerPawnBase::entitySpottedState + EntitySpottedState_t::bSpottedByMask
+		DWORD AbsVelocity = 0x3D8;
 	} Pawn;
 
 	struct
@@ -85,12 +90,26 @@ namespace Offset
 		DWORD m_hObserverTarget = 0x44;
 		DWORD m_hController = 0x1294;
 		DWORD PawnArmor = 0x7F4;
+		DWORD HasDefuser = 0x7F8;
 		DWORD HasHelmet = 0x7F9;
 	} PlayerController;
 
 	struct
 	{
-		DWORD ClippingWeapon = 0x1308;
+		DWORD AttributeManager = 0x1098;		// C_AttributeContainer
+		DWORD FallbackPaintKit = 0x1548;
+		DWORD FallbackSeed = 0x154C;
+		DWORD FallbackWear = 0x1550;
+		DWORD FallbackStatTrak = 0x1554;
+		DWORD szCustomName = 0x2D0;
+
+		DWORD EntityQuality = 0x1BC;			// EconItemView::m_iEntityQuality
+		DWORD ItemIDHigh = 0x1D0;				// EconItemView::m_iItemIDHigh
+	} EconEntity;
+
+	struct
+	{
+		DWORD ClippingWeapon = 0x1308;			// WeaponBase
 		DWORD WeaponDataPTR = 0x368;
 		DWORD szName = 0xC20;
 		DWORD Clip1 = 0x15C8;					// C_BasePlayerWeapon::m_iClip1
@@ -99,6 +118,13 @@ namespace Offset
 		DWORD Penetration = 0xD4C;
 		DWORD WeaponType = 0x248;
 		DWORD Inaccuracy = 0xC8C;				// CCSWeaponBaseVData::m_flInaccuracyMove
+		DWORD inReload = 0x1744;
+
+		DWORD WeaponSize = 0x50;
+		DWORD ActiveWeapon = 0x58;
+		DWORD Item = 0x50;						// C_AttributeContainer::m_Item
+		DWORD ItemDefinitionIndex = 0x1BA;
+		DWORD m_MeshGroupMask = 0x180;			// CModelState::m_MeshGroupMask
 	} WeaponBaseData;
 
 	struct
@@ -130,21 +156,22 @@ namespace Offset
 
 	namespace Signatures
 	{
-		const std::string ForceForward = "48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 4C 6B E3";
+		const std::string ForceForward = "48 8D 05 ?? ?? ?? ?? 48 89 05 ?? ?? ?? ?? 48 83 C4 ?? E9 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC CC 48 81 EC";
 		const std::string ForceLeft = "48 8D 05 ?? ?? ?? ?? 48 89 45 ? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 4C 6B E3";
 		const std::string ForceRight = "48 8D 05 ?? ?? ?? ?? 48 89 45 ? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 4C 6B E3";
 		const std::string ForceJump = "48 8D 05 ?? ?? ?? ?? 48 89 4D ?? 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 4C 6B E3";
-		const std::string ForceCrouch = "48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 4C 6B E3";
+		const std::string ForceCrouch = "48 8D 05 ?? ?? ?? ?? 48 89 05 ?? ?? ?? ?? 48 83 C4 ?? E9 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC CC 48 83 EC ?? 66 C7 44 24";
 
+                const std::string LocalPlayerPawn = "48 8D 05 ?? ?? ?? ?? C3 CC CC CC CC CC CC CC CC 48 83 EC ?? 8B 0D";
 		const std::string InventoryServices = "E8 ?? ?? ?? ?? 8B 45 D0 48 8B 55 D8";
-		const std::string GlobalVars = "48 89 0D ?? ?? ?? ?? 48 89 41";
+		const std::string GlobalVars = "48 89 15 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 48 85 D2";
 		const std::string EntityList = "48 8B 0D ?? ?? ?? ?? 48 89 7C 24 ?? 8B FA C1 EB";
-		const std::string LocalPlayerController = "48 8B 05 ?? ?? ?? ?? 48 85 C0 74 4F";
-		const std::string ViewAngles = "48 8B 0D ?? ?? ?? ?? E9 ?? ?? ?? ?? CC CC CC CC 48 C7 02";
+		const std::string LocalPlayerController = "48 8B 05 ?? ?? ?? ?? 48 85 C0 74 ?? 8B 88";
+		const std::string ViewAngles = "48 8B 0D ?? ?? ?? ?? 48 8B 01 48 FF 60 30";
 		const std::string ViewMatrix = "48 8D 0D ?? ?? ?? ?? 48 C1 E0 06";
-		const std::string LocalPlayerPawn = "48 8D 05 ?? ?? ?? ?? C3 CC CC CC CC CC CC CC CC 48 83 EC ?? 8B 0D";
 		const std::string PlantedC4 = "48 8B 15 ?? ?? ?? ?? FF C0 48 8D 4C 24 40";
 		const std::string InputSystem = "48 89 05 ?? ?? ?? ?? 48 8D 05";
+		const std::string dwSensitivity = "48 8B 05 ?? ?? ?? ?? 48 8B 40 ?? F3 41 0F 59 F4";
 	}
 
 	bool UpdateOffsets();

@@ -5,7 +5,7 @@ namespace Lang
 	inline void SimplifiedChinese()
 	{
 		Global.Author = u8"CowNow";
-		Global.Date = u8"2024/02/01";
+		Global.Date = u8"2024/02/25";
 
 		Global.SwitchButton = u8"启用功能";
 		Global.FeatureSettings = u8"详细设置";
@@ -41,6 +41,7 @@ namespace Lang
 		ESPtext.ScopedESP = u8"开镜状态";
 		ESPtext.ShowArmorBar = u8"盔甲栏";
 		ESPtext.ArmorNum = u8"盔甲数值";
+		ESPtext.RenderDistance = u8"最大绘制距离: ";
 
 		ESPtext.BoxType_Normal = u8"正常";
 		ESPtext.BoxType_Edge = u8"动态";
@@ -58,12 +59,21 @@ namespace Lang
 		AimbotText.VisCheck = u8"仅可见目标";
 		AimbotText.JumpCheck = u8"仅在地面上";
 		AimbotText.FovSlider = u8"FOV: ";
+		AimbotText.FovMinSlider = u8"最小FOV: ";
 		AimbotText.SmoothSlider = u8"平滑度: ";
 		AimbotText.BoneList = u8"瞄准部位  ";
 		AimbotText.Tip = u8"此功能在菜单打开时不会工作";
 		AimbotText.ScopeOnly = u8"仅开镜";
 		AimbotText.AimLock = u8"自动锁定";
 		AimbotText.AutoShot = u8"自动开火";
+		AimbotText.BulletSlider = u8"从第几发开始: ";
+		AimbotText.IgnoreFlash = u8"无视闪光";
+		AimbotText.Ragebot = u8"红锁 (慎用)";
+
+		// RCS
+		RCStext.Toggle = u8"后坐控制";
+		RCStext.Yaw = u8"水平强度: ";
+		RCStext.Pitch = u8"垂直强度: ";
 
 		// Radar
 		RadarText.Toggle = u8"显示雷达";
@@ -81,6 +91,7 @@ namespace Lang
 		TriggerText.FeatureName = u8" 自动扳机";
 		TriggerText.HotKeyList = u8"热键    ";
 		TriggerText.Toggle = u8"保持激活";
+		TriggerText.ScopeOnly = u8"仅开镜";
 		TriggerText.DelaySlider = u8"延迟射击:";
 		TriggerText.FakeShotSlider = u8"射击持续时间:";
 
@@ -114,7 +125,7 @@ namespace Lang
 		MiscText.HitSound = u8"命中音效";
 		MiscText.bmbTimer = u8"C4计时器";
 		MiscText.SpecList = u8"旁观者列表";
-		MiscText.Bhop = u8"连跳";
+		MiscText.Bhop = u8"自动连跳";
 		MiscText.Watermark = u8"水印浮窗";
 		MiscText.CheatList = u8"功能列表";
 		MiscText.TeamCheck = u8"队伍检查";
@@ -131,6 +142,8 @@ namespace Lang
 		MiscText.fovchanger = u8"视角宽度: ";
 		MiscText.ForceScope = u8"右键开镜";
 		MiscText.FlashImmunity = u8"闪光免疫程度: ";
+		MiscText.NightMode = u8"夜间模式";
+		MiscText.Alpha = u8"透明度: ";
 
 		MiscText.FakeDuck = u8"假蹲";
 
@@ -148,6 +161,9 @@ namespace Lang
 		ConfigText.SeparateLine = u8"新建配置";
 		ConfigText.AuthorName = u8"作者";
 		ConfigText.ConfigName = u8"配置名";
+
+		ConfigText.SafeMode = u8"安全模式";
+		ConfigText.SafeModeHoveredTip = u8"禁用所有修改游戏数据的功能";
 
 		// Readme Menu
 		ReadMeText.FeatureName = u8" 其他信息";

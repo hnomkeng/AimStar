@@ -16,6 +16,7 @@ namespace MenuConfig
 		int MenuPage = 0;
 		ImVec2 LogoPos				= ImVec2(30.f, 30.f);
 		ImVec2 Logo2Pos				= ImVec2(25.f, 25.f);
+		ImVec2 Logo3Pos				= ImVec2(20.f, 30.f);
 		ImVec2 Button1Pos			= ImVec2(30.f, 142.f);
 		ImVec2 Button2Pos			= ImVec2(30.f, 142.f + 90.f);
 		ImVec2 Button3Pos			= ImVec2(30.f, 142.f + 180.f);
@@ -24,6 +25,7 @@ namespace MenuConfig
 		ImVec2 ChildSize			= ImVec2(574.f, 474.f);
 		ImColor BorderColor_Yellow	= ImColor(255, 204, 0, 255);
 		ImColor BorderColor_Purple	= ImColor(255, 0, 238, 255);
+		ImColor BorderColor_Red		= ImColor(200, 40, 40, 255);
 	} WCS;	// Window Component Settings
 
 	inline std::string Country = "";
@@ -201,9 +203,11 @@ namespace MiscCFG
 	inline bool CheatList = false;
 	inline bool ForceScope = false;
 	inline bool NightMode = false;
+	inline bool jumpthrow = false;
 	inline int NightModeAlpha = 0.f;
 	inline int Fov = 90;
 	inline float FlashImmunity = 0;
+	inline bool HitMarker = false;
 	inline ImColor BombTimerCol = ImColor(255, 120, 0, 255);
 	inline ImColor SmokeColor = ImColor(255, 0, 0, 255);
 	inline ImColor FireColor = ImColor(0, 255, 0, 255);

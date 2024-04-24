@@ -20,7 +20,7 @@ namespace MyConfigSaver {
 
         YAML::Emitter emitter;
 
-        emitter << YAML::Comment("AimStar Config File\nVersion: 4.3\nAuthor: " + author);
+        emitter << YAML::Comment("AimStar Config File\nVersion: 4.4\nAuthor: " + author);
         emitter << YAML::BeginMap;
 
         emitter << YAML::Key << "ESP";
@@ -214,6 +214,7 @@ namespace MyConfigSaver {
         emitter << YAML::Key << "FlashImmunity" << YAML::Value << MiscCFG::FlashImmunity;
         emitter << YAML::Key << "CheatList" << YAML::Value << MiscCFG::CheatList;
         emitter << YAML::Key << "Watermark" << YAML::Value << MiscCFG::WaterMark;
+        emitter << YAML::Key << "HitMarker" << YAML::Value << MiscCFG::HitMarker;
         emitter << YAML::Key << "HitSounds" << YAML::Value << MiscCFG::HitSound;
         emitter << YAML::Key << "BombTimer" << YAML::Value << MiscCFG::bmbTimer;
         emitter << YAML::Key << "TimerColor";
@@ -225,7 +226,7 @@ namespace MyConfigSaver {
         emitter << YAML::Key << "a" << YAML::Value << MiscCFG::BombTimerCol.Value.w;
         emitter << YAML::EndMap;
         emitter << YAML::Key << "FastStop" << YAML::Value << MiscCFG::FastStop;
-        emitter << YAML::Key << "SpecList" << YAML::Value << MiscCFG::BunnyHop;
+        emitter << YAML::Key << "SpecList" << YAML::Value << MiscCFG::SpecList;
         emitter << YAML::Key << "Glow" << YAML::Value << MiscCFG::EnemySensor;
         emitter << YAML::Key << "RadarHack" << YAML::Value << MiscCFG::RadarHack;
         emitter << YAML::Key << "MoneyService";
@@ -237,6 +238,7 @@ namespace MyConfigSaver {
         emitter << YAML::Key << "NoSmoke" << YAML::Value << MiscCFG::NoSmoke;
         emitter << YAML::Key << "NightMode" << YAML::Value << MiscCFG::NightMode;
         emitter << YAML::Key << "NightModeAlpha" << YAML::Value << MiscCFG::NightModeAlpha;
+        emitter << YAML::Key << "JumpThrow" << YAML::Value << MiscCFG::jumpthrow;
         emitter << YAML::Key << "TeamCheck" << YAML::Value << MenuConfig::TeamCheck;
         emitter << YAML::Key << "AntiRecord" << YAML::Value << MenuConfig::BypassOBS;
         emitter << YAML::Key << "Jitter" << YAML::Value << MiscCFG::Jitter;
@@ -292,7 +294,7 @@ namespace MyConfigSaver {
         emitter << YAML::Key << "Enable" << YAML::Value << MenuConfig::TriggerBot;
         emitter << YAML::Key << "Hotkey" << YAML::Value << MenuConfig::TriggerHotKey;
         emitter << YAML::Key << "Delay" << YAML::Value << TriggerBot::TriggerDelay;
-        emitter << YAML::Key << "FakeShot" << YAML::Value << TriggerBot::FakeShotDelay;
+        emitter << YAML::Key << "FakeShot" << YAML::Value << TriggerBot::ShotDuration;
         emitter << YAML::Key << "ScopeOnly" << YAML::Value << TriggerBot::ScopeOnly;
         emitter << YAML::Key << "IgnoreFlash" << YAML::Value << TriggerBot::IgnoreFlash;
         emitter << YAML::Key << "AutoMode" << YAML::Value << MenuConfig::TriggerAlways;
@@ -404,6 +406,22 @@ namespace MyConfigSaver {
             ESPConfig::HeadBoxColor.Value.y = ReadData(config["ESP"]["HeadBoxColor"]["g"], 0.f);
             ESPConfig::HeadBoxColor.Value.z = ReadData(config["ESP"]["HeadBoxColor"]["b"], 0.f);
             ESPConfig::HeadBoxColor.Value.w = ReadData(config["ESP"]["HeadBoxColor"]["a"], 0.f);
+            ESPConfig::VisibleColor.Value.x = ReadData(config["ESP"]["VisibleColor"]["r"], 0.f);
+            ESPConfig::VisibleColor.Value.y = ReadData(config["ESP"]["VisibleColor"]["g"], 0.f);
+            ESPConfig::VisibleColor.Value.z = ReadData(config["ESP"]["VisibleColor"]["b"], 0.f);
+            ESPConfig::VisibleColor.Value.w = ReadData(config["ESP"]["VisibleColor"]["a"], 0.f);
+            ESPConfig::FilledColor.Value.x = ReadData(config["ESP"]["FilledColor"]["r"], 0.f);
+            ESPConfig::FilledColor.Value.y = ReadData(config["ESP"]["FilledColor"]["g"], 0.f);
+            ESPConfig::FilledColor.Value.z = ReadData(config["ESP"]["FilledColor"]["b"], 0.f);
+            ESPConfig::FilledColor.Value.w = ReadData(config["ESP"]["FilledColor"]["a"], 0.f);
+            ESPConfig::FilledColor2.Value.x = ReadData(config["ESP"]["FilledColor2"]["r"], 0.f);
+            ESPConfig::FilledColor2.Value.y = ReadData(config["ESP"]["FilledColor2"]["g"], 0.f);
+            ESPConfig::FilledColor2.Value.z = ReadData(config["ESP"]["FilledColor2"]["b"], 0.f);
+            ESPConfig::FilledColor2.Value.w = ReadData(config["ESP"]["FilledColor2"]["a"], 0.f);
+            ESPConfig::BoxFilledVisColor.Value.x = ReadData(config["ESP"]["FilledVisColor"]["r"], 0.f);
+            ESPConfig::BoxFilledVisColor.Value.y = ReadData(config["ESP"]["FilledVisColor"]["g"], 0.f);
+            ESPConfig::BoxFilledVisColor.Value.z = ReadData(config["ESP"]["FilledVisColor"]["b"], 0.f);
+            ESPConfig::BoxFilledVisColor.Value.w = ReadData(config["ESP"]["FilledVisColor"]["a"], 0.f);
             ESPConfig::EyeRayColor.Value.x = ReadData(config["ESP"]["EyeRayColor"]["r"], 0.f);
             ESPConfig::EyeRayColor.Value.y = ReadData(config["ESP"]["EyeRayColor"]["g"], 0.f);
             ESPConfig::EyeRayColor.Value.z = ReadData(config["ESP"]["EyeRayColor"]["b"], 0.f);
@@ -466,6 +484,7 @@ namespace MyConfigSaver {
             MiscCFG::FlashImmunity = ReadData(config["Misc"]["FlashImmunity"], 0.f);
             MiscCFG::CheatList = ReadData(config["Misc"]["CheatList"], false);
             MiscCFG::WaterMark = ReadData(config["Misc"]["Watermark"], false);
+            MiscCFG::HitMarker = ReadData(config["Misc"]["HitMarker"], false);
             MiscCFG::HitSound = ReadData(config["Misc"]["HitSounds"], 0);
             MiscCFG::bmbTimer = ReadData(config["Misc"]["BombTimer"], false);
             MiscCFG::BombTimerCol.Value.x = ReadData(config["Misc"]["TimerColor"]["r"], 0.f);
@@ -481,6 +500,7 @@ namespace MyConfigSaver {
             MiscCFG::NoSmoke = ReadData(config["Misc"]["NoSmoke"], false);
             MiscCFG::NightMode = ReadData(config["Misc"]["NightMode"], false);
             MiscCFG::NightModeAlpha = ReadData(config["Misc"]["NightModeAlpha"], 0);
+            MiscCFG::jumpthrow = ReadData(config["Misc"]["JumpThrow"], false);
             MenuConfig::TeamCheck = ReadData(config["Misc"]["TeamCheck"], true);
             MenuConfig::BypassOBS = ReadData(config["Misc"]["AntiRecord"], false);
             MiscCFG::Jitter = ReadData(config["Misc"]["Jitter"], false);
@@ -505,6 +525,7 @@ namespace MyConfigSaver {
             MenuConfig::FovCircleColor.Value.z = ReadData(config["Aimbot"]["CircleColor"]["b"], 0.f);
             MenuConfig::FovCircleColor.Value.w = ReadData(config["Aimbot"]["CircleColor"]["a"], 0.f);
             AimControl::Smooth = ReadData(config["Aimbot"]["Smooth"], 2.f);
+            AimControl::HitboxList = LoadVector(config["Aimbot"]["Hitboxes"], { BONEINDEX::head });
             MenuConfig::VisibleCheck = ReadData(config["Aimbot"]["VisibleCheck"], true);
             AimControl::IgnoreFlash = ReadData(config["Aimbot"]["IgnoreFlash"], false);
             AimControl::ScopeOnly = ReadData(config["Aimbot"]["ScopeOnly"], false);
@@ -521,7 +542,7 @@ namespace MyConfigSaver {
             MenuConfig::TriggerBot = ReadData(config["Triggerbot"]["Enable"], false);
             MenuConfig::TriggerHotKey = ReadData(config["Triggerbot"]["Hotkey"], 0);
             TriggerBot::TriggerDelay = ReadData(config["Triggerbot"]["Delay"], 20);
-            TriggerBot::FakeShotDelay = ReadData(config["Triggerbot"]["FakeShot"], 200);
+            TriggerBot::ShotDuration = ReadData(config["Triggerbot"]["FakeShot"], 200);
             TriggerBot::ScopeOnly = ReadData(config["Triggerbot"]["ScopeOnly"], false);
             TriggerBot::IgnoreFlash = ReadData(config["Triggerbot"]["IgnoreFlash"], false);
             MenuConfig::TriggerAlways = ReadData(config["Triggerbot"]["AutoMode"], false);
@@ -533,7 +554,7 @@ namespace MyConfigSaver {
             MenuConfig::Theme = ReadData(config["Menu"]["Theme"], 0);
         }
 
-        if (MenuConfig::Theme == 2)
+        if (MenuConfig::Theme == 3)
         {
             // Custom Theme Loader
             if (config["Custom Theme"])

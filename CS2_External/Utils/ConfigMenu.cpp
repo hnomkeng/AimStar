@@ -103,12 +103,12 @@ namespace ConfigMenu {
 		ImGui::SetCursorPosX(CurrentCursorX + CursorX);
 		ImGui::SeparatorText(Lang::ConfigText.SeparateLine);
 		ImGui::SetCursorPosX(CurrentCursorX + CursorX);
-		ImGui::TextDisabled(Lang::ConfigText.AuthorName);
+		ImGui::TextDisabled(Lang::ConfigText.ConfigName);
 		ImGui::SetCursorPosX(CurrentCursorX + CursorX);
 		ImGui::SetNextItemWidth(ComponentWidth + 8);
 		ImGui::InputText("###ConfigNameInput", configNameBuffer, sizeof(configNameBuffer));
 		ImGui::SetCursorPosX(CurrentCursorX + CursorX);
-		ImGui::TextDisabled(Lang::ConfigText.ConfigName);
+		ImGui::TextDisabled(Lang::ConfigText.AuthorName);
 		ImGui::SetCursorPosX(CurrentCursorX + CursorX);
 		ImGui::SetNextItemWidth(ComponentWidth + 8);
 		ImGui::InputText("###AuthorNameInput", configAuthorBuffer, sizeof(configAuthorBuffer));
@@ -135,6 +135,8 @@ namespace ConfigMenu {
 		ESPConfig::RenderDistance = 80;
 		ESPConfig::ArmorBar = false;
 		ESPConfig::ShowArmorNum = false;
+		MiscCFG::HitMarker = false;
+		MiscCFG::jumpthrow = false;
 		MiscCFG::NightModeAlpha = 0;
 		MiscCFG::NightMode = false;
 		MiscCFG::FlashImmunity = 0.f;
@@ -207,7 +209,7 @@ namespace ConfigMenu {
 		ESPConfig::ShowLineToEnemy = false;
 		MenuConfig::FovLineSize = 60.0f;
 		TriggerBot::TriggerDelay = 90;
-		TriggerBot::FakeShotDelay = 500;
+		TriggerBot::ShotDuration = 500;
 		RCS::RCSBullet = 1;
 		MenuConfig::TriggerHotKey = 0;
 		TriggerBot::SetHotKey(MenuConfig::TriggerHotKey);

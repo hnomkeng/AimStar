@@ -1,4 +1,6 @@
 ﻿#pragma once
+#include <functional>
+
 #include "..\MenuConfig.hpp"
 #include "..\Render.hpp"
 #include "..\Features\Aimbot\Legitbot.hpp"
@@ -13,6 +15,7 @@
 
 ID3D11ShaderResourceView* AS_Logo = NULL;
 ID3D11ShaderResourceView* NL_Logo = NULL;
+ID3D11ShaderResourceView* AW_Logo = NULL;
 ID3D11ShaderResourceView* MenuButton1 = NULL;
 ID3D11ShaderResourceView* MenuButton2 = NULL;
 ID3D11ShaderResourceView* MenuButton3 = NULL;
@@ -21,6 +24,7 @@ ID3D11ShaderResourceView* HitboxImage = NULL;
 
 int LogoW = 0, LogoH = 0;
 int LogoW2 = 0, LogoH2 = 0;
+int LogoW3 = 0, LogoH3 = 0;
 int buttonW = 0;
 int buttonH = 0;
 int hitboxW = 0, hitboxH = 0;
@@ -72,7 +76,7 @@ namespace GUI
 		if (it != HitboxList.end())
 			checkbox5 = true;
 
-		MenuConfig::HitboxUpdated = false;
+		MenuConfig::HitboxUpdated = true;
 	}
 	void addHitbox(int BoneIndex)
 	{
@@ -95,6 +99,7 @@ namespace GUI
 			// Updater::CheckForUpdates();
 			Gui.LoadTextureFromMemory(Images::AS_Logo, sizeof Images::AS_Logo, &AS_Logo, &LogoW, &LogoH);
 			Gui.LoadTextureFromMemory(Images::NL_Logo, sizeof Images::NL_Logo, &NL_Logo, &LogoW2, &LogoH2);
+			Gui.LoadTextureFromMemory(Images::AW_Logo, sizeof Images::AW_Logo, &AW_Logo, &LogoW3, &LogoH3);
 			Gui.LoadTextureFromMemory(Images::VisualButton, sizeof Images::VisualButton, &MenuButton1, &buttonW, &buttonH);
 			Gui.LoadTextureFromMemory(Images::AimbotButton, sizeof Images::AimbotButton, &MenuButton2, &buttonW, &buttonH);
 			Gui.LoadTextureFromMemory(Images::MiscButton, sizeof Images::MiscButton, &MenuButton3, &buttonW, &buttonH);
@@ -110,6 +115,13 @@ namespace GUI
 		float ColumnContentWidth = ImGui::GetColumnWidth() - ImGui::GetStyle().ItemSpacing.x;
 		float checkboxPosX = ImGui::GetColumnOffset() + ColumnContentWidth - ContentWidth;
 		ImGui::SetCursorPosX(checkboxPosX);
+	}
+	bool SettingButton(const char* label, float CursorX)
+	{
+		float CurrentCursorX = ImGui::GetCursorPosX();
+		ImGui::SetCursorPosX(CurrentCursorX + CursorX + ImGui::CalcTextSize(label).x);
+		ImGui::SameLine();
+		return ImGui::Button(ICON_FA_SUN);
 	}
 	void PutSwitch(const char* string, float CursorX, float ContentWidth, bool* v, bool ColorEditor = false, const char* lable = NULL, float col[4] = NULL, const char* Tip = NULL)
 	{
@@ -131,6 +143,24 @@ namespace GUI
 		
 		Gui.SwitchButton(string, v);
 		ImGui::PopID();
+	}
+	// return true when extended button clicked
+	bool SwitchExtendedButton(const char* string, float CursorX, float ContentWidth, bool* v, const char* ButtonText, const char* Tip = NULL)
+	{
+		ImGui::PushID(string);
+		float CurrentCursorX = ImGui::GetCursorPosX();
+		ImGui::SetCursorPosX(CurrentCursorX + CursorX);
+		ImGui::TextDisabled(string);
+		if (Tip && ImGui::IsItemHovered())
+			ImGui::SetTooltip(Tip);
+		ImGui::SameLine();
+		ImVec2 TempCursorPos = ImGui::GetCursorPos();
+		AlignRight(ContentWidth);
+		Gui.SwitchButton(string, v);
+		ImGui::PopID();
+
+		ImGui::SetCursorPos(TempCursorPos);
+		return ImGui::Button(ButtonText);
 	}
 	void PutColorEditor(const char* text, const char* lable, float CursorX, float ContentWidth, float col[4], const char* Tip = NULL)
 	{
@@ -196,6 +226,12 @@ namespace GUI
 			MenuConfig::ButtonBorderColor = MenuConfig::WCS.BorderColor_Purple;
 			break;
 		case 2:
+			ImageID = (void*)AW_Logo;
+			LogoSize = ImVec2(LogoW3, LogoH3);
+			LogoPos = MenuConfig::WCS.Logo3Pos;
+			MenuConfig::ButtonBorderColor = MenuConfig::WCS.BorderColor_Red;
+			break;
+		case 3:
 			ImageID = (void*)AS_Logo;
 			LogoSize = ImVec2(LogoW, LogoH);
 			LogoPos = MenuConfig::WCS.LogoPos;
@@ -296,6 +332,7 @@ namespace GUI
 							PutSwitch(Lang::ESPtext.MultiColor, 10.f, ImGui::GetFrameHeight() * 1.7, &ESPConfig::MultiColor, true, "###MultiCol", reinterpret_cast<float*>(&ESPConfig::FilledColor2));
 						PutSwitch(Lang::ESPtext.HeadBox, 10.f, ImGui::GetFrameHeight() * 1.7, &ESPConfig::ShowHeadBox, true, "###HeadBoxCol", reinterpret_cast<float*>(&ESPConfig::HeadBoxColor));
 						PutSwitch(Lang::ESPtext.Skeleton, 10.f, ImGui::GetFrameHeight() * 1.7, &ESPConfig::ShowBoneESP, true, "###BoneCol", reinterpret_cast<float*>(&ESPConfig::BoneColor));
+						PutSwitch(Lang::ESPtext.Penis, 10.f, ImGui::GetFrameHeight() * 1.7, &ESPConfig::ShowPenis, true, "###PenisCol", reinterpret_cast<float*>(&ESPConfig::PenisColor));
 						PutSwitch(Lang::ESPtext.SnapLine, 10.f, ImGui::GetFrameHeight() * 1.7, &ESPConfig::ShowLineToEnemy, true, "###LineCol", reinterpret_cast<float*>(&ESPConfig::LineToEnemyColor));
 						if (ESPConfig::ShowLineToEnemy)
 							PutSliderInt(Lang::ESPtext.LinePosList, 10.f, &ESPConfig::LinePos, &MinCombo, &MaxCombo, LinePos[ESPConfig::LinePos]);
@@ -447,7 +484,7 @@ namespace GUI
 						ImVec2 StartPos = ImGui::GetCursorScreenPos();
 						ImGui::Image((void*)HitboxImage, ImVec2(hitboxW, hitboxH));
 						ImGui::GetWindowDrawList()->AddLine(ImVec2(StartPos.x + 130, StartPos.y + 74), ImVec2(StartPos.x + 205, StartPos.y + 74), ImColor(ImGui::GetStyleColorVec4(ImGuiCol_Border)), 1.8f); // Head
-						ImGui::SetCursorScreenPos(ImVec2(StartPos.x + 202, StartPos.y + 62)); 
+						ImGui::SetCursorScreenPos(ImVec2(StartPos.x + 203, StartPos.y + 63)); 
 						if (ImGui::Checkbox("###Head", &checkbox1))
 						{
 							if (checkbox1) {
@@ -458,7 +495,7 @@ namespace GUI
 							}
 						}
 						ImGui::GetWindowDrawList()->AddLine(ImVec2(StartPos.x + 129, StartPos.y + 103), ImVec2(StartPos.x + 59, StartPos.y + 103), ImColor(ImGui::GetStyleColorVec4(ImGuiCol_Border)), 1.8f); // Neck
-						ImGui::SetCursorScreenPos(ImVec2(StartPos.x + 40, StartPos.y + 91));
+						ImGui::SetCursorScreenPos(ImVec2(StartPos.x + 39, StartPos.y + 92));
 						if (ImGui::Checkbox("###Neck", &checkbox2))
 						{
 							if (checkbox2) {
@@ -469,7 +506,7 @@ namespace GUI
 							}
 						}
 						ImGui::GetWindowDrawList()->AddLine(ImVec2(StartPos.x + 120, StartPos.y + 141), ImVec2(StartPos.x + 195, StartPos.y + 141), ImColor(ImGui::GetStyleColorVec4(ImGuiCol_Border)), 1.8f); // Chest
-						ImGui::SetCursorScreenPos(ImVec2(StartPos.x + 192, StartPos.y + 129));
+						ImGui::SetCursorScreenPos(ImVec2(StartPos.x + 193, StartPos.y + 130));
 						if (ImGui::Checkbox("###Chest", &checkbox3))
 						{
 							if (checkbox3) {
@@ -480,7 +517,7 @@ namespace GUI
 							}
 						}
 						ImGui::GetWindowDrawList()->AddLine(ImVec2(StartPos.x + 119, StartPos.y + 167), ImVec2(StartPos.x + 44, StartPos.y + 167), ImColor(ImGui::GetStyleColorVec4(ImGuiCol_Border)), 1.8f); // Penis
-						ImGui::SetCursorScreenPos(ImVec2(StartPos.x + 25, StartPos.y + 155));
+						ImGui::SetCursorScreenPos(ImVec2(StartPos.x + 24, StartPos.y + 156));
 						if (ImGui::Checkbox("###Stomache", &checkbox4))
 						{
 							if (checkbox4) {
@@ -491,7 +528,7 @@ namespace GUI
 							}
 						}
 						ImGui::GetWindowDrawList()->AddLine(ImVec2(StartPos.x + 119, StartPos.y + 200), ImVec2(StartPos.x + 195, StartPos.y + 200), ImColor(ImGui::GetStyleColorVec4(ImGuiCol_Border)), 1.8f); // Penis
-						ImGui::SetCursorScreenPos(ImVec2(StartPos.x + 192, StartPos.y + 188));
+						ImGui::SetCursorScreenPos(ImVec2(StartPos.x + 193, StartPos.y + 189));
 						if (ImGui::Checkbox("###Penis", &checkbox5))
 						{
 							if (checkbox4) {
@@ -555,7 +592,7 @@ namespace GUI
 
 					ImGui::NewLine();
 					ImGui::SeparatorText(ICON_FA_HAND_POINTER" Triggerbot");
-					int DelayMin = 10, DelayMax = 1000;
+					int DelayMin = 0, DelayMax = 300;
 					int DurationMin = 0, DurationMax = 1000;
 					PutSwitch(Lang::TriggerText.Enable, 5.f, ImGui::GetFrameHeight() * 1.7, &MenuConfig::TriggerBot);
 					if (MenuConfig::TriggerBot)
@@ -573,8 +610,8 @@ namespace GUI
 						PutSwitch(Lang::TriggerText.Toggle, 5.f, ImGui::GetFrameHeight() * 1.7, &MenuConfig::TriggerAlways);
 						PutSwitch(Lang::TriggerText.ScopeOnly, 5.f, ImGui::GetFrameHeight() * 1.7, &TriggerBot::ScopeOnly);
 						PutSwitch(Lang::AimbotText.IgnoreFlash, 10.f, ImGui::GetFrameHeight() * 1.7, &TriggerBot::IgnoreFlash);
-						PutSliderInt(Lang::TriggerText.DelaySlider, 5.f, &TriggerBot::TriggerDelay, &DelayMin, &DelayMax, "%d ms");
-						PutSliderInt(Lang::TriggerText.FakeShotSlider, 5.f, &TriggerBot::FakeShotDelay, &DurationMin, &DurationMax, "%d ms");
+						PutSliderInt(Lang::TriggerText.DelaySlider, 1.f, &TriggerBot::TriggerDelay, &DelayMin, &DelayMax, "%d ms");
+						PutSliderInt(Lang::TriggerText.FakeShotSlider, 5.f, &TriggerBot::ShotDuration, &DurationMin, &DurationMax, "%d ms");
 					}
 
 					ImGui::Columns(1);
@@ -589,9 +626,13 @@ namespace GUI
 					ImGui::SetCursorPos(ImVec2(15.f, 24.f));
 					ImGui::SeparatorText(ICON_FA_SUN" Misc");
 
-					PutSwitch(Lang::MiscText.NightMode, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::NightMode);
-					if (MiscCFG::NightMode)
+					if (SwitchExtendedButton(Lang::MiscText.NightMode, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::NightMode, "..."))
+						ImGui::OpenPopup("##NightModeSettings");
+					ImGui::SetNextWindowSize(ImVec2(ImGui::GetColumnWidth(), 0));
+					if (ImGui::BeginPopup("##NightModeSettings")) {
 						PutSliderInt(Lang::MiscText.Alpha, 10.f, &MiscCFG::NightModeAlpha, &NightMin, &NightMax, "%d");
+						ImGui::EndPopup();
+					}
 					if (!MenuConfig::SafeMode)
 					{
 						PutSliderInt(Lang::MiscText.fovchanger, 10.f, &MiscCFG::Fov, &FovMin, &FovMax, "%d");
@@ -607,17 +648,16 @@ namespace GUI
 					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 10.f);
 					ImGui::TextDisabled(Lang::MiscText.HitSound);
 					ImGui::SameLine();
-					ImGui::SetNextItemWidth(170.f);
+					ImGui::SetNextItemWidth(165.f);
 					ImGui::Combo("###HitSounds", &MiscCFG::HitSound, "None\0Neverlose\0Skeet\0Fuck\0Senpai\0");
+					PutSwitch("Hit Marker", 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::HitMarker);
+					// SwitchExtendedButton("Hit Marker", 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::HitMarker, "...");
+					PutSwitch(Lang::MiscText.JumpThrow, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::jumpthrow);
 					PutSwitch(Lang::MiscText.MoneyService, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::MoneyService);
 					if (MiscCFG::MoneyService)
 						PutSwitch(Lang::MiscText.ShowCashSpent, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::ShowCashSpent);
-					if (!MenuConfig::SafeMode)
-					{
-						PutSwitch(Lang::MiscText.NoSmoke, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::NoSmoke);
-						PutSwitch(Lang::MiscText.SmokeColor, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::SmokeColored, true, "###SmokeColor", reinterpret_cast<float*>(&MiscCFG::SmokeColor));
-					}
 					PutSwitch(Lang::MiscText.SpecCheck, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::WorkInSpec);
+					
 					// PutSwitch(Lang::MiscText.SpecList, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::SpecList);
 					PutSwitch(Lang::MiscText.TeamCheck, 10.f, ImGui::GetFrameHeight() * 1.7, &MenuConfig::TeamCheck);
 					PutSwitch(Lang::MiscText.Watermark, 10.f, ImGui::GetFrameHeight() * 1.7, &MiscCFG::WaterMark);
@@ -643,9 +683,9 @@ namespace GUI
 					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5.f);
 					ImGui::TextDisabled(Lang::MiscText.ThemeList);
 					ImGui::SameLine();
-					if (ImGui::Combo("###Theme", &MenuConfig::Theme, "AimStar\0NeverLose\0Custom\0"))
+					if (ImGui::Combo("###Theme", &MenuConfig::Theme, "AimStar\0NeverLose\0AIMWARE\0Custom\0"))
 						StyleChanger::UpdateSkin(MenuConfig::Theme);
-					if (MenuConfig::Theme == 2)
+					if (MenuConfig::Theme == 3)
 					{	
 						ImColor windowBgColor = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
 						ImColor borderColor = ImGui::GetStyleColorVec4(ImGuiCol_Border);
@@ -720,6 +760,7 @@ namespace GUI
 						if (ImGui::Button(ICON_FA_COMMENT_DOTS " QQ Group", { ImGui::GetColumnWidth() - 20.f, 25.f }))
 							Gui.OpenWebpage("https://qm.qq.com/cgi-bin/qm/qr?k=bdYSbTfM9OBycOQw3PrEkRm9B_-s3cLj&jump_from=webapi&authKey=losu+2q8xDQCrHR00oG7vU2q8Bmc+PNFxZhWwODUULf4I0c6K+/uIXSya3Vmk/XA");
 					}
+
 					ImGui::NewLine();
 					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetColumnWidth() / 4);
 					if (ImGui::Button("Safe Exit", { 125.f, 25.f }))

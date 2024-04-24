@@ -38,7 +38,7 @@ namespace Offset
 	{
 		DWORD MovementServices = 0x1140;		// CPlayer_MovementServices*
 		DWORD WeaponServices = 0x1100;			// CPlayer_WeaponServices*
-		DWORD BulletServices = 0x1718;			// CCSPlayer_BulletServices*
+		DWORD BulletServices = 0x1710;			// CCSPlayer_BulletServices*
 		DWORD CameraServices = 0x1138;			// CPlayer_CameraServices*
 		DWORD ViewModelServices = 0x12C8;		// CPlayer_ViewModelServices*
 		DWORD pClippingWeapon = 0x1308;			// C_CSWeaponBase*
@@ -46,26 +46,29 @@ namespace Offset
 		DWORD ViewModel = 0x40;				// CCSPlayer_ViewModelServices::m_hViewModel
 		DWORD StartAccount = 0x1490;
 		DWORD isScoped = 0x1400;
+		DWORD isDefusing = 0x1408;
 		DWORD TotalHit = 0x40;
-		DWORD Pos = 0x127C;						// C_BasePlayerPawn::m_vOldOrigin
+		DWORD Pos = 0x127C;// C_BasePlayerPawn::m_vOldOrigin
+		DWORD CurrentArmor = 0x1568;// C_BasePlayerPawn::m_ArmorValue
 		DWORD MaxHealth = 0x330;				// C_BaseEntity::m_iMaxHealth
-		DWORD CurrentHealth = 0x334;			// C_BaseEntity::m_iHealth
+		DWORD CurrentHealth = 0x334;// C_BaseEntity::m_iHealth
 		DWORD GameSceneNode = 0x318;			// C_BaseEntity::m_pGameSceneNode
-		DWORD BoneArray = 0x1E0;				// CSkeletonInstance_::m_modelState + CGameSceneNode_::m_vecOrigin
-		DWORD angEyeAngles = 0x1578;
+		DWORD BoneArray = 0x160 + 0x80;				// CSkeletonInstance_::m_modelState + CGameSceneNode_::m_vecOrigin
+		DWORD angEyeAngles = 0x1570;
 		DWORD vecLastClipCameraPos = 0x12EC;
 		DWORD iShotsFired = 0x147C;
-		DWORD flFlashMaxAlpha = 0x14C8;
-		DWORD flFlashDuration = 0x14CC;
-		DWORD aimPunchAngle = 0x177C;			// C_CSPlayerPawn::m_aimPunchAngle
-		DWORD aimPunchCache = 0x17A0;
-		DWORD iIDEntIndex = 0x15A4;
+		DWORD flFlashMaxAlpha = 0x14C4;
+		DWORD flFlashDuration = 0x14C8;
+		DWORD aimPunchAngle = 0x1774;			// C_CSPlayerPawn::m_aimPunchAngle
+		DWORD aimPunchCache = 0x1798;
+		DWORD iIDEntIndex = 0x159C;
 		DWORD iTeamNum = 0x3CB;
 		DWORD DesiredFov = 0x6CC;
 		DWORD iFovStart = 0x214;
 		DWORD fFlags = 0x3D4;
-		DWORD bSpottedByMask = 0x1698 + 0xC;	// C_CSPlayerPawnBase::entitySpottedState + EntitySpottedState_t::bSpottedByMask
+		DWORD bSpottedByMask = 0x1690 + 0xC;	// C_CSPlayerPawnBase::entitySpottedState + EntitySpottedState_t::bSpottedByMask
 		DWORD AbsVelocity = 0x3D8;
+		DWORD IsBuying = 0x17C2;
 	} Pawn;
 
 	struct
@@ -146,7 +149,7 @@ namespace Offset
 	{ 
 		DWORD nSmokeEffectTickBegin = 0x1160; // int32_t
 		DWORD bDidSmokeEffect = 0x1164; // bool
-		DWORD nRandomSeed = 1; // int32_t
+		DWORD nRandomSeed = 0x1168; // int32_t
 		DWORD vSmokeColor = 0x116C; // Vector
 		DWORD vSmokeDetonationPos = 0x1178; // Vector
 		DWORD VoxelFrameData = 0x1188; // CUtlVector<uint8_t>
@@ -162,15 +165,15 @@ namespace Offset
 		const std::string ForceJump = "48 8D 05 ?? ?? ?? ?? 48 89 4D ?? 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 48 8D 05 ?? ?? ?? ?? 48 89 45 ?? 4C 6B E3";
 		const std::string ForceCrouch = "48 8D 05 ?? ?? ?? ?? 48 89 05 ?? ?? ?? ?? 48 83 C4 ?? E9 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC CC 48 83 EC ?? 66 C7 44 24";
 
-                const std::string LocalPlayerPawn = "48 8D 05 ?? ?? ?? ?? C3 CC CC CC CC CC CC CC CC 48 83 EC ?? 8B 0D";
+		const std::string LocalPlayerPawn = "48 8D 05 ?? ?? ?? ?? C3 CC CC CC CC CC CC CC CC 48 83 EC ?? 8B 0D";
 		const std::string InventoryServices = "E8 ?? ?? ?? ?? 8B 45 D0 48 8B 55 D8";
-		const std::string GlobalVars = "48 89 15 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 48 85 D2";
-		const std::string EntityList = "48 8B 0D ?? ?? ?? ?? 48 89 7C 24 ?? 8B FA C1 EB";
+		const std::string GlobalVars = "48 89 0D ?? ?? ?? ?? 48 89 41";
+		const std::string EntityList = "48 89 35 ?? ?? ?? ?? 48 85 F6";
 		const std::string LocalPlayerController = "48 8B 05 ?? ?? ?? ?? 48 85 C0 74 ?? 8B 88";
-		const std::string ViewAngles = "48 8B 0D ?? ?? ?? ?? 48 8B 01 48 FF 60 30";
+		const std::string ViewAngles = "49 8D 81 ?? ?? ?? ?? 48 03 C7";
 		const std::string ViewMatrix = "48 8D 0D ?? ?? ?? ?? 48 C1 E0 06";
 		const std::string PlantedC4 = "48 8B 15 ?? ?? ?? ?? FF C0 48 8D 4C 24 40";
-		const std::string InputSystem = "48 89 05 ?? ?? ?? ?? 48 8D 05";
+		const std::string InputSystem = "48 89 05 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 48 89 0D ?? ?? ?? ?? 48 89 05 ?? ?? ?? ?? 48 8D 05";
 		const std::string dwSensitivity = "48 8B 05 ?? ?? ?? ?? 48 8B 40 ?? F3 41 0F 59 F4";
 	}
 

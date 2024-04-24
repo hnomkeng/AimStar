@@ -34,10 +34,17 @@ namespace Misc
 		ImColor(0, 0, 255),     // Purple
 	};
 
+	inline std::vector<std::string> Nades = { "smokegrenade", "flashbang", "hegrenade", "molotov", "decoy", "incgrenade" };
+
 	struct Vector3
 	{
 		float x, y, z;
 		Vector3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
+	};
+
+	struct Hitmarker {
+		float alpha;
+		std::chrono::steady_clock::time_point startTime;
 	};
 
 	// Convert std::string into std::wstring
@@ -98,10 +105,11 @@ namespace Misc
 	}
 
 	void Watermark(const CEntity& aLocalPlayer) noexcept;
-	void HitSound(const CEntity& aLocalPlayer, int& PreviousTotalHits) noexcept;
+	void HitMarker(float Size, float Gap);
 	void FlashImmunity(const CEntity& aLocalPlayer) noexcept;
 	void FastStop() noexcept;
 	void NadeManager(CGame Game) noexcept;
+	void HitManager(const CEntity& aLocalPlayer, int& PreviousTotalHits) noexcept;
 	void RadarHack(const CEntity& EntityList) noexcept;
 	void FovChanger(const CEntity& aLocalPlayer) noexcept;
 	void MoneyService(const CEntity& EntityList) noexcept;
@@ -110,4 +118,6 @@ namespace Misc
 	void CheatList() noexcept;
 	void ForceScope(const CEntity& aLocalPlayer) noexcept;
 	void NightMode() noexcept;
+	void JumpThrow(const CEntity& Local) noexcept;
+	void SpectatorList(const CEntity& Local, const CEntity& Entity);
 }
